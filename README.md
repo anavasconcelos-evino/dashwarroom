@@ -7,7 +7,7 @@ Dash de acompanhamento comercial, growth e CRM do e-commerce Evino, com abas **H
 ```
 public/        página estática (index.html, data.js, fonts.css, runtime.js)
 api/data.js    função serverless: GET /api/data?id=<fonte>&<parâmetros>
-lib/           acesso às fontes (Redshift, Google Sheets, Meta Ads)
+lib/           acesso às fontes (Redshift, Google Sheets, Meta Ads, Insider One)
 ```
 
 - `public/runtime.js` faz o papel do runtime de dashboards do Claude: busca cada fonte em `/api/data`, roda os cálculos de `data.js` e redesenha os blocos. Atualiza sozinho a cada 5 minutos com a aba aberta.
@@ -18,7 +18,7 @@ lib/           acesso às fontes (Redshift, Google Sheets, Meta Ads)
 | Redshift | vendas, pedidos, kits, hora a hora, faixas, canal × SKU, último clique | `lib/redshift-sources.js` |
 | Google Sheets | Monitoramento de Canais (receita LC, metas, investimento) e Plano de Vendas do mês | `lib/sheets-sources.js` |
 | Meta Ads (Marketing API) | gasto, impressões, cliques e compras por anúncio; série diária | `lib/meta-sources.js` |
-| Insider One | email e WhatsApp | **ainda não conectado**: o bloco de CRM mostra "—" |
+| Insider One (APIs de relatório) | resumo de e-mail e WhatsApp, campanhas de e-mail (envios e abertura) | `lib/insider-sources.js` |
 
 ### Tabelas do Redshift
 
@@ -34,7 +34,7 @@ São as tabelas de origem das views do Dados Víssimo (registro do ETL). As colu
 
 **Permissões:** o usuário do Redshift precisa de `SELECT` nessas tabelas. As views `vissimo_bi.*` e `vw_carga_*` exigem permissão extra, por isso o padrão usa as tabelas de origem. Sem permissão em `vw_ev_dim_product_bundle`, o dash continua funcionando, só sem nome e estoque dos kits (as outras tabelas de kits do Redshift pararam em 2023). Para liberar: `GRANT SELECT ON dora_red_aggregations.vw_ev_dim_product_bundle TO <usuário>;`
 
-**Fontes com erro:** se uma fonte falha (token da Meta vencido, planilha sem acesso, Insider ainda não ligado), cada bloco mostra o que der com as outras fontes e só exibe o erro quando não sobra nada para mostrar.
+**Fontes com erro:** se uma fonte falha (token da Meta vencido, planilha sem acesso, chave do Insider inválida), cada bloco mostra o que der com as outras fontes e só exibe o erro quando não sobra nada para mostrar.
 
 ## Conceitos de receita
 

@@ -4,11 +4,9 @@
 const redshift = require('../lib/redshift-sources');
 const sheets = require('../lib/sheets-sources');
 const meta = require('../lib/meta-sources');
+const insider = require('../lib/insider-sources');
 
-const SOURCES = Object.assign({}, redshift, sheets, meta);
-/* CRM (Insider One): sem integração direta ainda — o bloco de CRM mostra "—" até ligarmos a API do Insider */
-['email_insider', 'email_insider_mes', 'whats_insider', 'whats_insider_mes', 'email_lista', 'email_c1', 'email_c2', 'email_c3', 'email_c4', 'email_c5']
-  .forEach((id) => { SOURCES[id] = async () => { throw new Error('Insider One ainda não está conectado nesta versão'); }; });
+const SOURCES = Object.assign({}, redshift, sheets, meta, insider);
 
 const DATE = /^20[0-9]{2}-[01][0-9]-[0-3][0-9]$/;
 const RULES = {
