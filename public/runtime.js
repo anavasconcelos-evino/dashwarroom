@@ -35,6 +35,11 @@
     email_c5: ['email_id_5', 'ini_email'],
   };
   const REFRESH_MS = 5 * 60 * 1000;
+  /* fontes sem as quais o cálculo mostraria zeros enganosos: se falharem, o bloco mostra o erro */
+  const REQUIRED = {
+    fb_top_cac: ['meta_ads'],
+    whats_resumo: ['whats_insider'],
+  };
 
   let P = {};
   const D = {};      // fonte -> { status, data, error, key, seq }
@@ -72,13 +77,24 @@
     if (CALC[id]) {
       const c = CALC[id];
       const ins = c.inputs.map((i) => data(i));
-      if (ins.some((x) => x.status === 'error')) return { status: 'error', data: [], error: (ins.find((x) => x.status === 'error') || {}).error };
-      if (ins.some((x) => x.status !== 'ok')) return { status: 'loading', data: [] };
-      const sig = ins.map((x) => x.sig || x.seq || 0).join('|') + '|' + c.inputs.map((i) => (D[i] ? D[i].key : '')).join('|');
+      /* uma fonte com erro (ex.: Meta sem token, Insider ainda não ligado) não derruba o bloco:
+         o cálculo roda com ela vazia e o bloco só vira erro se não sobrar nada para mostrar */
+      if (ins.some((x) => x.status === 'loading')) return { status: 'loading', data: [] };
+      const failed = ins.filter((x) => x.status === 'error');
+      const must = (REQUIRED[id] || []).map((i) => ins[c.inputs.indexOf(i)]).find((x) => x && x.status === 'error');
+      if (must) return { status: 'error', data: [], error: must.error };
+      const sig = ins.map((x) => x.status + (x.sig || x.seq || 0)).join('|') + '|' + c.inputs.map((i) => (D[i] ? D[i].key : '')).join('|');
       const m = MEMO[id];
       if (m && m.sig === sig) return m.out;
       let out;
-      try { const v = c.fn.apply(null, ins.map((x) => x.data || [])); out = { status: 'ok', data: Array.isArray(v) ? v : (v && v.rows) || [], sig: Date.now() + Math.random() }; }
+      try {
+        const v = c.fn.apply(null, ins.map((x) => (x.status === 'ok' ? x.data || [] : [])));
+        const rows = Array.isArray(v) ? v : (v && v.rows) || [];
+        out = failed.length && !rows.length
+          ? { status: 'error', data: [], error: failed[0].error }
+          : { status: 'ok', data: rows, sig: Date.now() + Math.random(), partial: failed.map((x) => x.error) };
+        if (failed.length) console.warn('[calc ' + id + '] sem ' + failed.length + ' fonte(s): ' + failed.map((x) => x.error).join(' | '));
+      }
       catch (e) { out = { status: 'error', data: [], error: String(e && e.message || e) }; console.error('[calc ' + id + ']', e); }
       MEMO[id] = { sig, out };
       return out;

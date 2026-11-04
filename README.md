@@ -25,12 +25,16 @@ lib/           acesso às fontes (Redshift, Google Sheets, Meta Ads)
 | Uso | Tabela padrão | Variável para trocar |
 |---|---|---|
 | Pedidos × item | `dora_red_aggregations.ev_fact_order_item` | `T_FACT_ORDER_ITEM` |
-| Último clique | `vissimo_bi.vw_ev_last_click_pedido` | `T_LAST_CLICK` |
+| Último clique | `dora_red_aggregations.ev_last_click_full` | `T_LAST_CLICK` |
 | Kits | `dora_red_aggregations.vw_ev_dim_product_bundle` | `T_DIM_BUNDLE` |
-| Grupo de produto (faixas) | `dora_red_aggregations.vw_carga_ev_grupo_de_produto` | `T_GRUPO_PRODUTO` |
+| Grupo de produto (faixas) | `dora_red_aggregations.ev_grupo_de_produto` | `T_GRUPO_PRODUTO` |
 | Produto | `dora_red_aggregations.ev_dim_product` | `T_DIM_PRODUCT` |
 
 São as tabelas de origem das views do Dados Víssimo (registro do ETL). As colunas usadas são as mesmas das views; se alguma tiver outro nome no Redshift, o erro aparece na própria tela e nos logs da função.
+
+**Permissões:** o usuário do Redshift precisa de `SELECT` nessas tabelas. As views `vissimo_bi.*` e `vw_carga_*` exigem permissão extra, por isso o padrão usa as tabelas de origem. Sem permissão em `vw_ev_dim_product_bundle`, o dash continua funcionando, só sem nome e estoque dos kits (as outras tabelas de kits do Redshift pararam em 2023). Para liberar: `GRANT SELECT ON dora_red_aggregations.vw_ev_dim_product_bundle TO <usuário>;`
+
+**Fontes com erro:** se uma fonte falha (token da Meta vencido, planilha sem acesso, Insider ainda não ligado), cada bloco mostra o que der com as outras fontes e só exibe o erro quando não sobra nada para mostrar.
 
 ## Conceitos de receita
 

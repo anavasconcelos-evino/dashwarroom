@@ -196,7 +196,8 @@ dash.calc('kpis', {
     if (!vendas.length) return [];
     const agg = (rows) => { let rec = 0, frete = 0, cm2 = 0, garrafas = 0, recG = 0; rows.forEach((r) => { rec += r.rec; frete += r.frete; cm2 += r.cm2; if (+r.is_bottle === 1) { garrafas += r.qtd; recG += r.rec_raw != null ? r.rec_raw : r.rec; } }); const tot = rec + frete; return { tot, cm2pct: tot ? cm2 / tot : null, garrafas, pmv: garrafas ? recG / garrafas : null }; };
     const a = agg(vendas), b = agg(vendas_yoy);
-    const ped = pedidos_canal.reduce((s, r) => s + r.n, 0), pedY = pedidos_canal_yoy.reduce((s, r) => s + r.n, 0);
+    /* sem a fonte de last click, pedidos e ticket ficam "—" em vez de zero */
+    const ped = pedidos_canal.length ? pedidos_canal.reduce((s, r) => s + r.n, 0) : null, pedY = pedidos_canal_yoy.length ? pedidos_canal_yoy.reduce((s, r) => s + r.n, 0) : null;
     const ch = (x, y) => (x != null && y ? x / y - 1 : null);
     const tk = ped ? a.tot / ped : null, tkY = pedY ? b.tot / pedY : null;
     return [{
@@ -313,8 +314,11 @@ dash.calc('diario', {
   description: 'Receita last click e meta de cada dia do mês corrente e receita do mesmo dia do ano passado, da planilha de canais.',
   inputs: ['canais_diario', 'email_insider_mes'],
   fn: (canais_diario, email_insider_mes) => {
-    if (!email_insider_mes.length || !canais_diario.length) return [];
-    const ini = email_insider_mes[0].ini, fim = email_insider_mes[0].fim, mes = ini.slice(0, 7);
+    if (!canais_diario.length) return [];
+    /* o período do mês vem do Insider; sem ele, mês corrente até ontem (horário de Brasília) */
+    const ontem = new Date(Date.now() - 27 * 3600e3).toISOString().slice(0, 10);
+    const ini = email_insider_mes.length ? email_insider_mes[0].ini : ontem.slice(0, 8) + '01';
+    const fim = email_insider_mes.length ? email_insider_mes[0].fim : ontem, mes = ini.slice(0, 7);
     const ly = String(+mes.slice(0, 4) - 1) + mes.slice(4);
     const by = {}, byLy = {};
     canais_diario.forEach((r) => { if (r.canal === 'Total') return; if (r.data.slice(0, 7) === mes) { const o = by[r.data] || (by[r.data] = { rec: 0, plan: 0 }); o.rec += r.rec; o.plan += r.rec_plan; } if (r.data.slice(0, 7) === ly) byLy[r.data.slice(8)] = (byLy[r.data.slice(8)] || 0) + r.rec; });
