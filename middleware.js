@@ -2,7 +2,7 @@
    (Víssimo, Evino e Grand Cru). Roda na borda da Vercel antes de qualquer página ou /api.
 
    /auth/login     → manda para o Google
-   /auth/callback  → confere o e-mail e grava a sessão (cookie assinado, 7 dias)
+   / (com ?code=)  → volta do Google: confere o e-mail e grava a sessão (cookie assinado, 7 dias)
    /auth/logout    → apaga a sessão
 
    Variáveis: GOOGLE_OAUTH_CLIENT_ID e GOOGLE_OAUTH_CLIENT_SECRET (ou AUTH_GOOGLE_ID e AUTH_GOOGLE_SECRET), AUTH_SECRET
@@ -109,7 +109,7 @@ export default async function middleware(req) {
       ? Response.json({ error: 'Login não configurado' }, { status: 503 })
       : loginPage('config', 503);
   }
-  const callback = url.origin + '/auth/callback';
+  const callback = url.origin + '/'; /* URI de redirecionamento cadastrado no Google: https://<domínio>/ */
 
   if (path === '/auth/login') {
     const state = b64url(crypto.getRandomValues(new Uint8Array(24)));
@@ -120,7 +120,7 @@ export default async function middleware(req) {
     return redirect('https://accounts.google.com/o/oauth2/v2/auth?' + q, [setCookie(STATE_COOKIE, state, 600)]);
   }
 
-  if (path === '/auth/callback') {
+  if (path === '/' && url.searchParams.has('state') && (url.searchParams.has('code') || url.searchParams.has('error'))) {
     const c = cookies(req);
     const clear = setCookie(STATE_COOKIE, '', 0);
     const code = url.searchParams.get('code');
