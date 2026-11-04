@@ -53,7 +53,8 @@
   const ready = (id) => (SOURCES[id] || []).every((k) => P[k] != null && P[k] !== '');
 
   async function fetchSource(id, quiet) {
-    if (!ready(id)) { D[id] = { status: 'loading', data: [], key: null }; return; }
+    /* fonte sem os parâmetros (ex.: estatísticas de e-mail sem a lista do Insider): fica ociosa e entra vazia nos cálculos */
+    if (!ready(id)) { D[id] = { status: 'idle', data: [], key: null }; schedule(); return; }
     const key = keyOf(id);
     const cur = D[id];
     const seq = (cur && cur.seq || 0) + 1;
@@ -76,7 +77,7 @@
   function data(id) {
     if (CALC[id]) {
       const c = CALC[id];
-      const ins = c.inputs.map((i) => data(i));
+      const ins = c.inputs.map((i) => { const x = data(i); return x.status === 'idle' ? { status: 'ok', data: [], seq: 'idle' } : x; });
       /* uma fonte com erro (ex.: Meta sem token, Insider ainda não ligado) não derruba o bloco:
          o cálculo roda com ela vazia e o bloco só vira erro se não sobrar nada para mostrar */
       if (ins.some((x) => x.status === 'loading')) return { status: 'loading', data: [] };
