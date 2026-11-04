@@ -1,0 +1,11 @@
+{
+  "name": "dashwarroom",
+  "version": "1.0.0",
+  "private": true,
+  "description": "War Room · Evino e-commerce — comercial, growth e CRM com dados do Redshift, Google Sheets e Meta Ads.",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "google-auth-library": "^9.15.0",
+    "pg": "^8.13.1"
+  }
+}

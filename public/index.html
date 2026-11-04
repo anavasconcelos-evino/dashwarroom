@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>War Room · Evino</title>
+<style>html, body { margin: 0; background: #fff6f3; } #dash-root { max-width: 1600px; margin: 0 auto; }</style>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="runtime.js"></script>
+</head>
+<body>
+<div id="dash-root">
+<link rel="stylesheet" href="fonts.css">
+<style>
+/* Evino brandbook: vermelho Evino #f9182d em destaque pontual, creme #fff6f3 de fundo, vinhos #751614/#590f12/#270d0f para texto e estrutura, salmão #f4a384 e laranja #f17041 de apoio. Paytone (caixa-alta) nos títulos, Barlow Condensed Bold nas retrancas, Barlow Semi Condensed no corpo. Parênteses destacam o que importa; elipses nos botões. */
+#dash-root { --dash-gutter: 0; }
+#dash-root .wr {
+  --ev-red: #f9182d; --ev-orange: #f17041; --ev-cream: #fff6f3; --ev-wine: #751614; --ev-salmon: #f4a384; --ev-bord: #590f12; --ev-dark: #270d0f; --ev-line: #f3d9cf;
+  --ev-good: #2f6f57; --ev-bad: #d1182b; --ev-warn: #a35f00;
+  --f-title: 'EvPaytone', var(--font-anthropic-sans); --f-ret: 'EvBarlowC', var(--font-anthropic-sans); --f-body: 'EvBarlowSC', var(--font-anthropic-sans);
+  display: grid; gap: 28px; padding: clamp(20px, 3vw, 36px) clamp(20px, 5.5vw, 72px); background: var(--ev-cream); color: var(--ev-dark);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.4; font-variant-numeric: tabular-nums;
+}
+#dash-root .wr [hidden] { display: none !important; }
+#dash-root .wr h1, #dash-root .wr h2 { font-family: var(--f-title); font-weight: 400; text-transform: uppercase; margin: 0; line-height: 1.05; }
+#dash-root .wr h1 { font-size: clamp(26px, 4vw, 40px); color: #fff; }
+#dash-root .wr h2 { font-size: clamp(20px, 2.6vw, 26px); color: var(--ev-wine); }
+#dash-root .wr h2 .par { color: var(--ev-red); }
+#dash-root .wr h3 { font-family: var(--f-ret); font-weight: 700; font-size: 16px; letter-spacing: .04em; text-transform: uppercase; color: var(--ev-wine); margin: 0; }
+#dash-root .wr p { margin: 0; }
+.wr .cap { font-size: 13px; color: #7a4a46; }
+.wr .hero { background: var(--ev-red); color: #fff; border-radius: 22px; padding: clamp(18px, 3vw, 28px); display: grid; gap: 14px; }
+.wr .hero .eyebrow { font-family: var(--f-ret); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 14px; color: var(--ev-cream); }
+.wr .hero .lead { font-size: 16px; color: #fff; max-width: 60rem; }
+.wr .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; position: sticky; top: 0; z-index: 4; background: var(--ev-cream); padding: 10px 0; border-bottom: 2px solid var(--ev-line); }
+.wr .tabs { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+.wr .tabs button { font-family: var(--f-ret); font-weight: 700; font-size: 15px; letter-spacing: .05em; text-transform: uppercase; border: 2px solid var(--ev-red); background: #fff; color: var(--ev-red); padding: 7px 20px; border-radius: 999px; cursor: pointer; }
+.wr .tabs button[aria-pressed="true"] { background: var(--ev-red); color: #fff; }
+.wr .tabs button:focus-visible { outline: 3px solid var(--ev-wine); outline-offset: 2px; }
+.wr .per { font-size: 14px; color: var(--ev-wine); }
+.wr .per b { font-weight: 600; }
+.wr section { display: grid; gap: 14px; }
+.wr .sec-h { display: grid; gap: 4px; }
+.wr .tiles { display: flex; flex-wrap: wrap; gap: 12px; }
+.wr .tiles > .tile { flex: 1 1 9.5rem; min-width: min-content; }
+.wr .stack { display: grid; gap: 12px; }
+.wr .card > .tiles .tile { background: var(--ev-cream); box-shadow: none; }
+.wr .tile { background: #fff; border-radius: 18px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; box-shadow: 0 1px 0 var(--ev-line); }
+.wr .tile .lb { font-family: var(--f-ret); font-weight: 700; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; color: var(--ev-wine); }
+.wr .tile .v { font-family: var(--f-title); font-size: clamp(22px, 2.4vw, 28px); line-height: 1.1; color: var(--ev-dark); white-space: nowrap; }
+.wr .tile .s { font-size: 13px; color: #7a4a46; display: flex; flex-wrap: wrap; gap: 2px 6px; }
+.wr .up { color: var(--ev-good); font-weight: 600; }
+.wr .down { color: var(--ev-bad); font-weight: 600; }
+.wr .flat { color: #7a4a46; font-weight: 600; }
+.wr .warn { color: var(--ev-warn); font-weight: 600; }
+.wr .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 12px; }
+.wr .card { background: #fff; border-radius: 18px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; box-shadow: 0 1px 0 var(--ev-line); }
+.wr .chart { position: relative; min-height: 220px; }
+.wr .tw { border-radius: 12px; }
+@media (max-width: 720px) { .wr .tw { overflow-x: auto; } }
+.wr table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.wr th, .wr td { padding: 6px 8px; text-align: right; white-space: nowrap; }
+.wr th:first-child, .wr td:first-child { text-align: left; }
+.wr th:first-child { position: sticky; }
+.wr .nm { display: block; max-width: var(--namew, 15rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wr th .rz { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: col-resize; border-right: 2px solid rgba(255,255,255,.35); }
+.wr th .rz:hover { border-right-color: var(--ev-salmon); }
+.wr td.t { text-align: left; white-space: normal; }
+.wr thead th { position: sticky; top: 0; background: var(--ev-wine); color: #fff; font-family: var(--f-ret); font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+.wr tbody tr:nth-child(even) td { background: var(--ev-cream); }
+.wr tbody td { border-bottom: 1px solid var(--ev-line); }
+.wr tr.tot td { font-weight: 700; background: #fde3dc !important; }
+.wr .tip { position: absolute; pointer-events: none; background: var(--ev-dark); color: var(--ev-cream); border-radius: 10px; padding: 6px 10px; font-size: 13px; white-space: nowrap; z-index: 3; }
+.wr .tip .d { color: var(--ev-salmon); font-family: var(--f-ret); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.wr .note { font-size: 13px; color: #7a4a46; }
+.wr .pill-crm { font-family: var(--f-ret); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 1px 10px; border-radius: 999px; font-size: 12px; color: #fff; justify-self: start; }
+.wr .pill-crm.email { background: var(--ev-orange); }
+.wr .pill-crm.whats { background: var(--ev-good); }
+.wr .defs { display: grid; gap: 6px; font-size: 13px; color: #7a4a46; border-top: 2px solid var(--ev-line); padding-top: 14px; }
+.wr .sub-google { display: grid; gap: inherit; }
+.wr .sub-h { margin: 18px 0 -4px; font-family: var(--f-ret, inherit); font-size: 18px; letter-spacing: .05em; text-transform: uppercase; color: var(--ev-wine); border-top: 2px solid var(--ev-line); padding-top: 14px; }
+/* destaque da tabela de linhas do plano devendo */
+.wr .card.alerta { background: #fff7ef; border: 1px solid #f6c9a8; border-left: 6px solid var(--ev-orange); }
+.wr .card.alerta h3 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.wr .card.alerta .tag-al { font-family: var(--f-ret, inherit); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #fff; background: var(--ev-orange); border-radius: 999px; padding: 2px 10px; }
+/* Todos os canais */
+.wr .card-h > .btn-det { align-self: flex-start; font: 600 13px var(--f-body, inherit); padding: 7px 12px; border-radius: 8px; border: 1px solid var(--ev-line); background: #fff; color: var(--ev-dark); cursor: pointer; white-space: nowrap; }
+.wr .card-h > .btn-det:hover { border-color: var(--ev-red); }
+.wr .ct td { vertical-align: middle; line-height: 1.25; padding-block: 5px; border-bottom: 1px solid var(--ev-line); }
+.wr .ct .rv { font-weight: 600; }
+.wr .ct tr.g td { background: #fbeee8; font-weight: 700; }
+.wr .ct tr.g .rv { font-weight: 700; }
+.wr .ct tr.tot td { background: #f3d9cf; font-weight: 700; }
+.wr .ct td.child { padding-left: 26px; }
+.wr .ct .rm { font-size: 11px; color: #6b5450; font-weight: 500; display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.wr .ct .cbar { width: 48px; height: 4px; border-radius: 3px; background: #f1e3dc; overflow: hidden; }
+.wr .ct .cbar i { display: block; height: 100%; border-radius: 3px; }
+.wr .ct td.hit { background: #e3f2ea !important; color: var(--ev-good); font-weight: 700; }
+.wr .ct td.miss { background: #ffe1e1 !important; color: var(--ev-bad); font-weight: 700; }
+.wr .ct td.parcial { background: #efecee !important; color: #7b7480; font-style: italic; }
+.wr .ct td.nm2 { color: #9b7b75; text-align: center; font-style: italic; font-size: 12px; }
+.wr .ct .sep { border-left: 1px solid var(--ev-line); }
+.wr .ct .pend { font-size: 11px; font-weight: 700; color: var(--ev-warn); background: #fdf1d6; border-radius: 999px; padding: 1px 7px; margin-left: 6px; white-space: nowrap; }
+.wr .ct .grp { font: inherit; font-weight: 700; background: none; border: 0; color: inherit; cursor: pointer; padding: 0; display: inline-flex; gap: 6px; align-items: center; }
+.wr .ct .grp .car { font-size: 10px; color: #9b7b75; transition: transform .15s; display: inline-block; }
+.wr .ct .grp[aria-expanded="false"] .car { transform: rotate(-90deg); }
+.wr .ct .ar { font-size: 9px; margin-right: 2px; }
+.wr .ct .up { color: var(--ev-good); } .wr .ct .down { color: var(--ev-bad); } .wr .ct .flat { color: #8a7a76; }
+.wr .ct th.gh { text-align: center; background: var(--ev-bord); font-size: 11px; cursor: default; }
+/* pirâmide de faixas por grupo de canal */
+.wr .pira { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 18px 24px; }
+.wr .pira .pg h4 { margin: 0 0 2px; font-family: var(--f-ret, inherit); font-size: 15px; letter-spacing: .04em; text-transform: uppercase; color: var(--ev-wine); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.wr .pira .pg h4 span { font-family: var(--f-body, inherit); text-transform: none; letter-spacing: 0; font-size: 13px; color: #6b5450; font-weight: 600; }
+.wr .pira .pr { display: grid; grid-template-columns: 1fr; gap: 3px; margin-top: 8px; }
+.wr .pira .lv { display: grid; grid-template-columns: 58px 1fr; gap: 8px; align-items: center; font-size: 12.5px; }
+.wr .pira .lv .fx { color: #6b5450; white-space: nowrap; }
+.wr .pira .lv .tr { display: flex; align-items: center; gap: 8px; height: 26px; min-width: 0; }
+.wr .pira .lv .bl { height: 100%; border-radius: 0 4px 4px 0; min-width: 2px; flex: none; transform-origin: left; animation: evPir .7s var(--cds-ease-out, ease-out) both; }
+.wr .pira .lv .vv { white-space: nowrap; font-size: 12.5px; color: var(--ev-dark); }
+.wr .pira .lv .vv b { font-weight: 700; }
+.wr .pira .lv .vv span { color: #6b5450; margin-left: 6px; }
+.wr .pira .lv.out { opacity: .6; margin-top: 4px; }
+.wr .pira .pg h5 { margin: 16px 0 6px; font-family: var(--f-ret, inherit); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #6b5450; border-top: 1px solid var(--ev-line); padding-top: 10px; }
+.wr .pira ol.kg { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: kg; }
+.wr .pira ol.kg li { counter-increment: kg; display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 6px; font-size: 12.5px; line-height: 1.3; }
+.wr .pira ol.kg li::before { content: counter(kg); grid-row: span 2; font-weight: 700; color: var(--ev-red); }
+.wr .pira ol.kg .kn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ev-dark); font-weight: 600; }
+.wr .pira ol.kg .kv { display: flex; gap: 10px; color: #6b5450; font-size: 12px; }
+.wr .pira ol.kg .kv b { color: var(--ev-dark); }
+@keyframes evPir { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .wr .pira .lv .bl { animation: none; } }
+/* faixas e animações */
+.wr .card-h { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 16px; }
+.wr .card-h > div { display: grid; gap: 4px; }
+.wr .card-h > .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; align-self: flex-start; }
+.wr .seg button { white-space: nowrap; }
+.wr .seg { display: inline-flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--ev-cream); }
+.wr .seg button { font-family: var(--f-ret); font-weight: 700; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; border: 0; background: transparent; color: var(--ev-wine); padding: 5px 14px; border-radius: 999px; cursor: pointer; }
+.wr .seg button[aria-pressed="true"] { background: var(--ev-wine); color: #fff; }
+.wr .chart.faixa { min-height: 280px; }
+@media (prefers-reduced-motion: no-preference) {
+  .wr .tile, .wr .card, .wr .atg-box { animation: evUp .5s var(--cds-ease-out, ease-out) both; }
+  .wr .faixa rect.real { transform-box: fill-box; transform-origin: left; animation: evGrow .9s var(--cds-ease-out, ease-out) both; }
+  .wr .badge.down { animation: evPulse 1.6s ease-in-out 2; }
+  @keyframes evUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes evGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes evPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(249,24,45,.0); } 50% { box-shadow: 0 0 0 5px rgba(249,24,45,.25); } }
+}
+/* disparos de hoje */
+.wr tr.hoje td { font-weight: 600; }
+.wr tr.hoje td:first-child { box-shadow: inset 4px 0 0 #f5c42e; }
+.wr .tag-hoje { display: inline-block; margin-right: 6px; padding: 0 7px; border-radius: 999px; background: #f5c42e; color: var(--ev-dark); font-family: var(--f-ret); font-weight: 700; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; vertical-align: 1px; }
+/* expandir lista */
+.wr .more { justify-self: center; font-family: var(--f-ret); font-weight: 700; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; border: 2px solid var(--ev-wine); background: #fff; color: var(--ev-wine); padding: 6px 18px; border-radius: 999px; cursor: pointer; }
+.wr .more:hover { background: var(--ev-cream); }
+.wr .more:focus-visible { outline: 2px solid var(--ev-red); outline-offset: 2px; }
+/* mix de faixas */
+.wr .chart.share { min-height: 150px; }
+.wr h3.sub { font-size: 14px; color: var(--ev-dark); margin-bottom: 6px; }
+.wr .legend-fx { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: #7a4a46; }
+.wr .legend-fx i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+@media (prefers-reduced-motion: no-preference) { .wr .share rect.seg { transform-box: fill-box; transform-origin: left; animation: evGrow .8s var(--cds-ease-out, ease-out) both; } }
+/* nomes de anúncio */
+.wr td.tipo { text-align: left; }
+.wr td.tipo .tp, .wr td.ad .tp { display: inline-block; font-family: var(--f-ret); font-weight: 700; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; color: #fff; }
+.wr td.ad .influ { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-right: 6px; border-radius: 50%; background: #f5c42e; color: var(--ev-dark); vertical-align: -3px; flex: none; }
+.wr td.ad { text-align: left; white-space: nowrap; line-height: 1.25; }
+.wr td.ad .tp { display: inline-block; font-family: var(--f-ret); font-weight: 700; font-size: 11px; letter-spacing: .05em; padding: 1px 7px; border-radius: 999px; margin-right: 6px; color: #fff; vertical-align: 1px; }
+td .tp.vid { background: var(--ev-orange); }
+.wr td .tp.est { background: #9c6edb; }
+.wr td .tp.cat { background: var(--ev-wine); }
+.wr td .tp.out { background: #8a7a76; }
+.wr td.ad b { font-weight: 700; color: var(--ev-dark); font-size: 14px; }
+.wr td.ad .rest { display: block; font-size: 12px; color: #9b7b75; }
+/* cores de status */
+.wr .tile { border-top: 5px solid transparent; }
+.wr .tile.acc-up { border-top-color: var(--ev-good); background: #f1f8f4; }
+.wr .tile.acc-warn { border-top-color: #f5c42e; background: #fffaf0; }
+.wr .tile.acc-down { border-top-color: var(--ev-red); background: #fff1f1; }
+.wr .hora-wrap { display: grid; grid-template-columns: minmax(11rem, 14rem) 1fr; gap: 16px; align-items: stretch; }
+@media (max-width: 640px) { .wr .hora-wrap { grid-template-columns: 1fr; } }
+.wr .atg-box { border-radius: 18px; padding: 16px; display: grid; gap: 4px; align-content: center; background: var(--ev-wine); color: #fff; }
+.wr .atg-box.acc-up { background: var(--ev-good); }
+.wr .atg-box.acc-warn { background: #c27c00; }
+.wr .atg-box.acc-down { background: var(--ev-red); }
+.wr .atg-box .lb { font-family: var(--f-ret); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; font-size: 14px; color: #fff; }
+.wr .atg-box .big { font-family: var(--f-title); font-size: clamp(38px, 5vw, 54px); line-height: 1; color: #fff; }
+.wr .atg-box .s { font-size: 14px; color: #fff; }
+.wr .atg-box .s b { font-weight: 600; }
+.wr .atg-box .up, .wr .atg-box .down, .wr .atg-box .warn, .wr .atg-box .flat { color: #fff; }
+.wr thead th { cursor: pointer; user-select: none; }
+.wr thead th:hover { background: var(--ev-bord); }
+.wr thead th:focus-visible { outline: 2px solid var(--ev-salmon); outline-offset: -2px; }
+.wr thead th[aria-sort="descending"]::after { content: " ▼"; color: var(--ev-salmon); }
+.wr thead th[aria-sort="ascending"]::after { content: " ▲"; color: var(--ev-salmon); }
+.wr td.up, .wr td.down, .wr td.warn { font-weight: 700; }
+.wr td.cell-up { background: #e3f2ea !important; color: var(--ev-good); font-weight: 700; }
+.wr td.cell-warn { background: #fdf1d6 !important; color: var(--ev-warn); font-weight: 700; }
+.wr td.cell-down { background: #ffe1e1 !important; color: var(--ev-bad); font-weight: 700; }
+.wr .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-family: var(--f-ret); font-weight: 700; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: #fff; }
+.wr .badge.up { background: var(--ev-good); color: #fff; }
+.wr .badge.warn { background: #e0a100; color: #fff; }
+.wr .badge.down { background: var(--ev-red); color: #fff; }
+.wr .badge.neutral { background: #b9a19b; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+[data-dash-source-state=empty] { color: transparent; }
+</style>
+
+<div class="wr">
+  <header class="hero" id="topo">
+    <span class="eyebrow">( Comercial · Growth · CRM )</span>
+    <h1>Evino e-commerce</h1>
+    <p class="lead"><span data-draw="resumo">—</span></p>
+  </header>
+
+  <div class="bar">
+    <div class="tabs" role="group" aria-label="Período">
+      <button type="button" class="tab" data-p="hoje" id="tab-hoje" aria-pressed="true">Hoje</button>
+      <button type="button" class="tab" data-p="ontem" id="tab-ontem" aria-pressed="false">Ontem</button>
+      <button type="button" class="tab" data-p="mtd" id="tab-mtd" aria-pressed="false">Mês até ontem</button>
+    </div>
+    <p class="per">Período <b data-draw="per">—</b><span class="c-nohoje"> · YoY contra <b data-draw="per_yoy">—</b></span></p>
+  </div>
+
+  <!-- ============ COMERCIAL ============ -->
+  <section id="comercial">
+    <div class="sec-h"><h2><span class="par">(</span> Comercial <span class="par">)</span></h2><p class="cap">E-commerce Evino (Magento). Em Hoje, boleto condition: pedidos solid com boleto a 65% e PIX a 75%; em Ontem e no mês, pedidos pagos.</p></div>
+    <div class="tiles">
+      <div class="tile c-dia" data-fetchpriority="high"><span class="lb">Receita last click</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Total" data-field="receita" data-fmt="brl">—</span><span class="s">meta do dia <span data-draw="kv" data-source="canais_dia" data-where="canal=Total" data-field="meta" data-fmt="brl">—</span></span></div>
+      <div class="tile c-mtd" data-fetchpriority="high"><span class="lb">Receita last click</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Total" data-field="receita" data-fmt="brl">—</span><span class="s">meta <span data-draw="kv" data-source="canais" data-where="canal=Total" data-field="meta" data-fmt="brl">—</span></span></div>
+      <div class="tile c-ontem"><span class="lb">Atingimento da meta</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Total" data-field="ating" data-fmt="atg" data-accent="atg">—</span><span class="s"><span data-draw="kv" data-source="canais_dia" data-where="canal=Total" data-field="var_yoy" data-fmt="delta">—</span> YoY</span></div>
+      <div class="tile c-mtd"><span class="lb">Atingimento da meta</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Total" data-field="ating" data-fmt="atg" data-accent="atg">—</span><span class="s"><span data-draw="kv" data-source="canais" data-where="canal=Total" data-field="var_yoy" data-fmt="delta">—</span> YoY</span></div>
+      <div class="tile"><span class="lb">Pedidos (last click)</span><span class="v" data-draw="kv" data-source="kpis" data-row="0" data-field="pedidos" data-fmt="int">—</span><span class="s c-nohoje"><span data-draw="kv" data-source="kpis" data-row="0" data-field="var_pedidos" data-fmt="delta">—</span> YoY</span></div>
+      <div class="tile"><span class="lb">Ticket médio</span><span class="v" data-draw="kv" data-source="kpis" data-row="0" data-field="ticket" data-fmt="brl2">—</span><span class="s c-nohoje"><span data-draw="kv" data-source="kpis" data-row="0" data-field="var_ticket" data-fmt="delta">—</span> YoY</span></div>
+      <div class="tile"><span class="lb">Garrafas vendidas</span><span class="v" data-draw="kv" data-source="kpis" data-row="0" data-field="garrafas" data-fmt="int">—</span><span class="s c-nohoje"><span data-draw="kv" data-source="kpis" data-row="0" data-field="var_garrafas" data-fmt="delta">—</span> YoY</span></div>
+      <div class="tile"><span class="lb">PMV (por garrafa)</span><span class="v" data-draw="kv" data-source="kpis" data-row="0" data-field="pmv" data-fmt="brl2">—</span><span class="s c-nohoje"><span data-draw="kv" data-source="kpis" data-row="0" data-field="var_pmv" data-fmt="delta">—</span> YoY</span></div>
+      <div class="tile"><span class="lb">CM2 %</span><span class="v" data-draw="kv" data-source="kpis" data-row="0" data-field="cm2_pct" data-fmt="cm2" data-accent="cm2">—</span><span class="s c-nohoje"><span data-draw="kv" data-source="kpis" data-row="0" data-field="var_cm2_pp" data-fmt="pp">—</span> YoY</span></div>
+      <div class="tile c-ontem"><span class="lb">Investimento</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Total" data-field="invest" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais_dia" data-where="canal=Total" data-field="invest_plan" data-fmt="brl">—</span></span></div>
+      <div class="tile c-ontem"><span class="lb">ROAS last click</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Total" data-field="roas" data-fmt="x" data-accent="x">—</span><span class="s">receita LC ÷ investimento</span></div>
+      <div class="tile c-mtd"><span class="lb">Investimento</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Total" data-field="invest" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais" data-where="canal=Total" data-field="invest_plan" data-fmt="brl">—</span></span></div>
+      <div class="tile c-mtd"><span class="lb">ROAS last click</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Total" data-field="roas" data-fmt="x" data-accent="x">—</span><span class="s">receita LC ÷ investimento</span></div>
+    </div>
+
+    <div class="c-hoje card" id="hora">
+      <h3>Receita acumulada hora a hora</h3>
+      <p class="cap">Real de hoje (boleto condition: boleto a 65% e PIX a 75%) contra o planejado (tracejado): meta last click do dia distribuída pela curva média por hora dos mesmos dias da semana nas 6 semanas anteriores.</p>
+      <div class="hora-wrap">
+        <div class="atg-box" data-fetchpriority="high">
+          <span class="lb">Atingimento até <span data-draw="kv" data-source="hora_resumo" data-row="0" data-field="ate" data-fmt="txt">—</span></span>
+          <span class="big" data-draw="kv" data-source="hora_resumo" data-row="0" data-field="ating_acum" data-fmt="atg" data-accent="atg">—</span>
+          <span class="s">real <b data-draw="kv" data-source="hora_resumo" data-row="0" data-field="real_acum" data-fmt="brl">—</b></span>
+          <span class="s">planejado <b data-draw="kv" data-source="hora_resumo" data-row="0" data-field="plano_acum" data-fmt="brl">—</b></span>
+          <span class="s">gap <b data-draw="kv" data-source="hora_resumo" data-row="0" data-field="gap" data-fmt="brlsg">—</b></span>
+        </div>
+        <div class="chart" data-draw="ch_hora" data-source="hora"></div>
+      </div>
+    </div>
+
+    <div class="c-mtd card" id="diario">
+      <h3>Receita last click por dia × meta</h3>
+      <p class="cap">Barras: real do mês · traço: meta do dia · linha: mesmo dia do ano passado.</p>
+      <div class="chart" data-draw="ch_diario" data-source="diario"></div>
+    </div>
+
+    <div class="c-hoje card" id="faixas-hoje">
+      <h3>Faixas de preço · mix de hoje × plano</h3>
+      <p class="cap">Participação de cada faixa na receita (produto + frete) e nas garrafas de hoje, contra o mix do Plano de Vendas. O atingimento por faixa aparece em Ontem e no mês.</p>
+      <div class="legend-fx"><span><i style="background:#f4a384"></i>0 - 30</span><span><i style="background:#f17041"></i>30 - 50</span><span><i style="background:#f9182d"></i>50 - 100</span><span><i style="background:#751614"></i>Acima de 100</span><span><i style="background:#b9a19b"></i>Outros</span></div>
+      <div class="grid">
+        <div><h3 class="sub">Share de receita</h3><div class="chart share" data-draw="ch_share" data-metric="receita" data-source="faixas"></div></div>
+        <div><h3 class="sub">Share de volume</h3><div class="chart share" data-draw="ch_share" data-metric="volume" data-source="faixas"></div></div>
+      </div>
+    </div>
+
+    <div class="c-nohoje card" id="faixas">
+      <div class="card-h">
+        <div><h3>Faixas de preço · real × planejado</h3>
+        <p class="cap">Receita (produto + frete) e garrafas por faixa (grupo de produto Evino) contra o Plano de Vendas do mês, proporcional à diarização até o fim do período. Traço = planejado.</p></div>
+        <div class="seg" role="group" aria-label="Métrica das faixas"><button type="button" class="fx-m" data-m="receita" aria-pressed="true">Receita</button><button type="button" class="fx-m" data-m="volume" aria-pressed="false">Volume</button></div>
+      </div>
+      <div class="chart faixa" data-draw="ch_faixa" data-source="faixas"></div>
+      <p class="note" data-draw="faixa_nota" data-source="faixas">—</p>
+    </div>
+    <div class="c-nohoje card alerta" id="plano-gap">
+      <h3><span class="tag-al">Atenção</span>Top 5 linhas do plano que mais estão devendo</h3>
+      <p class="cap">Linhas do Plano de Vendas (grupo de produto nos clusters, produto nos estratégicos) com a maior diferença entre real e planejado no período. O plano é por linha, não por SKU.</p>
+      <div class="tw"><table data-source="plano_gap" data-row-key="linha">
+        <thead><tr><th tabindex="0" data-field="linha">Linha do plano<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="tipo" data-fmt="txt">Tipo</th><th tabindex="0" data-field="faixa" data-fmt="txt">Faixa</th><th tabindex="0" data-field="receita" data-fmt="brl">Real</th><th tabindex="0" data-field="receita_plan" data-fmt="brl">Planejado</th><th tabindex="0" data-field="ating" data-fmt="atg">Ating.</th><th tabindex="0" data-field="gap" data-fmt="brlsg" aria-sort="ascending">Gap</th></tr></thead>
+        <tbody data-draw="tbl"></tbody></table></div>
+    </div>
+
+    <div class="card" id="sku-top">
+      <div class="card-h">
+        <div><h3>Top 5 SKUs por faixa de preço</h3>
+        <p class="cap">SKUs com mais receita (produto + frete) no período, dentro da faixa escolhida. Share = participação na receita total do período.</p></div>
+        <div class="seg" role="group" aria-label="Faixa de preço"><button type="button" class="fx-sku" data-v="0 - 30" aria-pressed="true">0 - 30</button><button type="button" class="fx-sku" data-v="30 - 50" aria-pressed="false">30 - 50</button><button type="button" class="fx-sku" data-v="50 - 100" aria-pressed="false">50 - 100</button><button type="button" class="fx-sku" data-v="Acima de 100" aria-pressed="false">Acima de 100</button><button type="button" class="fx-sku" data-v="Outros" aria-pressed="false">Outros</button></div>
+      </div>
+      <div class="tw"><table data-source="sku_top" data-row-key="sku" data-filter-btn=".fx-sku" data-filter-col="faixa">
+        <thead><tr><th tabindex="0" data-field="pos" data-fmt="int">#<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="nome" data-fmt="txt">Produto</th><th tabindex="0" data-field="sku" data-fmt="txt">SKU</th><th tabindex="0" data-field="receita" data-fmt="brl" aria-sort="descending">Receita</th><th tabindex="0" data-field="share" data-fmt="pct">Share</th><th tabindex="0" data-field="garrafas" data-fmt="int">Garrafas</th><th tabindex="0" data-field="pmv" data-fmt="brl2">PMV</th><th tabindex="0" data-field="cm2_pct" data-fmt="cm2">CM2 %</th></tr></thead>
+        <tbody data-draw="tbl"></tbody></table></div>
+    </div>
+
+
+    <div class="card" id="piramide">
+      <div class="card-h"><div><h3>Faixas de preço e top kits por grupo de canal</h3>
+        <p class="cap">Mix de faixas (grupo de produto Evino) e os 5 kits com mais receita dentro de cada grupo de canal de último clique. Growth = mídia paga; CRM = App Push, Email, SMS, Web Push e WhatsApp; Outros/Orgânico = o resto, inclusive pedidos sem clique. Em Hoje, boleto condition; em Ontem e no mês, pedidos pagos.</p></div>
+        <div class="seg" role="group" aria-label="Métrica da pirâmide"><button type="button" class="pm-m" data-m="receita" aria-pressed="true">Receita</button><button type="button" class="pm-m" data-m="volume" aria-pressed="false">Volume</button></div></div>
+      <div class="pira" data-draw="piramide" data-source="piramide"></div>
+    </div>
+
+    <div class="c-nohoje card" id="canais-todos">
+      <div class="card-h"><div><h3>Todos os canais</h3>
+        <p class="cap">Receita last click, meta e investimento da planilha Monitoramento de Canais no período. CM2 % = CM2 ÷ receita com frete dos pedidos pagos por canal de último clique (Dados Víssimo); no mês, leva mais tempo para chegar. Clique no cabeçalho para ordenar dentro de cada grupo; clique no grupo para recolher.</p></div>
+        <button type="button" class="btn-det" aria-pressed="false">Ver detalhes</button></div>
+      <div class="tw ct-wrap" data-draw="canais_todos" data-source="canais_todos"></div>
+    </div>
+
+
+    <div class="card" id="kits-top">
+      <h3>Top 10 kits e estoque</h3>
+      <p class="cap">Kits com mais receita no período. PMV = receita sem frete ÷ garrafas. Cobertura = estoque disponível de kits ÷ kits vendidos por dia no período.</p>
+      <div class="tw"><table data-source="kits_top" data-row-key="kit">
+        <thead><tr><th tabindex="0" data-field="kit_nome">Kit<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="kit">SKU</th><th tabindex="0" data-field="receita" aria-sort="descending" data-fmt="brl">Receita</th><th tabindex="0" data-field="kits_vendidos" data-fmt="int">Kits</th><th tabindex="0" data-field="pmv" data-fmt="brl2">PMV</th><th tabindex="0" data-field="cm2_pct" data-fmt="cm2">CM2 %</th><th tabindex="0" data-field="estoque_kits" data-fmt="int">Estoque (kits)</th><th tabindex="0" data-field="cobertura_dias" data-fmt="dias">Cobertura</th><th tabindex="0" data-field="alerta" data-fmt="alerta">Status</th></tr></thead>
+        <tbody data-draw="tbl"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ============ GROWTH ============ -->
+  <section id="growth">
+    <div class="sec-h"><h2><span class="par">(</span> Growth · Meta Ads e Google <span class="par">)</span></h2><p class="cap">Receita e investimento last click; CTR, CPC e CPM do Meta Ads (campanhas de e-commerce, sem Clube e Installs). Google em Ontem e no mês, da planilha de canais.</p></div>
+    <div class="tiles">
+      <div class="tile c-dia"><span class="lb">Receita LC Facebook</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Facebook" data-field="receita" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais_dia" data-where="canal=Facebook" data-field="meta" data-fmt="brl">—</span><span class="c-ontem"> · ating. <span data-draw="kv" data-source="canais_dia" data-where="canal=Facebook" data-field="ating" data-fmt="atg">—</span></span></span></div>
+      <div class="tile c-dia"><span class="lb">Investimento Facebook</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Facebook" data-field="invest" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais_dia" data-where="canal=Facebook" data-field="invest_plan" data-fmt="brl">—</span></span></div>
+      <div class="tile c-dia"><span class="lb">ROAS LC Facebook</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Facebook" data-field="roas" data-fmt="x" data-accent="x">—</span><span class="s">pedidos <span data-draw="kv" data-source="canais_dia" data-where="canal=Facebook" data-field="pedidos" data-fmt="int">—</span></span></div>
+      <div class="tile c-mtd"><span class="lb">Receita LC Facebook</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Facebook" data-field="receita" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais" data-where="canal=Facebook" data-field="meta" data-fmt="brl">—</span> · ating. <span data-draw="kv" data-source="canais" data-where="canal=Facebook" data-field="ating" data-fmt="atg">—</span></span></div>
+      <div class="tile c-mtd"><span class="lb">Investimento Facebook</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Facebook" data-field="invest" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais" data-where="canal=Facebook" data-field="invest_plan" data-fmt="brl">—</span></span></div>
+      <div class="tile c-mtd"><span class="lb">ROAS LC Facebook</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Facebook" data-field="roas" data-fmt="x" data-accent="x">—</span><span class="s">pedidos <span data-draw="kv" data-source="canais" data-where="canal=Facebook" data-field="pedidos" data-fmt="int">—</span></span></div>
+      <div class="tile"><span class="lb">CTR no link</span><span class="v" data-draw="kv" data-source="fb_resumo" data-row="0" data-field="ctr" data-fmt="pct2">—</span><span class="s c-dia">vs média do mês <span data-draw="kv" data-source="fb_resumo" data-row="0" data-field="var_ctr" data-fmt="delta">—</span></span><span class="s c-mtd">cliques no link ÷ impressões</span></div>
+      <div class="tile"><span class="lb">CPC no link</span><span class="v" data-draw="kv" data-source="fb_resumo" data-row="0" data-field="cpc" data-fmt="brl2">—</span><span class="s c-dia">vs média do mês <span data-draw="kv" data-source="fb_resumo" data-row="0" data-field="var_cpc" data-fmt="deltainv">—</span></span><span class="s c-mtd">gasto ÷ cliques no link</span></div>
+      <div class="tile"><span class="lb">CPM</span><span class="v" data-draw="kv" data-source="fb_resumo" data-row="0" data-field="cpm" data-fmt="brl2">—</span><span class="s c-dia">vs média do mês <span data-draw="kv" data-source="fb_resumo" data-row="0" data-field="var_cpm" data-fmt="deltainv">—</span></span><span class="s c-mtd">gasto ÷ mil impressões</span></div>
+    </div>
+
+    <div class="c-mtd card" id="meta-cpm">
+      <h3>CPM por dia · mês</h3>
+      <p class="cap">Conta Meta inteira, mês corrente.</p>
+      <div class="chart" data-draw="ch_cpm" data-source="meta_diario"></div>
+    </div>
+
+    <div class="grid">
+      <div class="c-dia card" id="top-cac">
+        <h3>Top 5 anúncios com mais ativações</h3>
+        <p class="cap">Novos clientes = pedidos pagos de primeira compra (is_first_order = 1) com último clique no anúncio (utm_content). CAC = gasto do anúncio ÷ novos clientes.</p>
+        <div class="tw"><table data-source="fb_top_cac" data-row-key="anuncio">
+          <thead><tr><th tabindex="0" data-field="anuncio" data-fmt="ad">Anúncio<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="tipo" data-fmt="tipo">Tipo</th><th tabindex="0" data-field="gasto" data-fmt="brl">Gasto</th><th tabindex="0" data-field="novos" aria-sort="descending" data-fmt="int">Novos clientes</th><th tabindex="0" data-field="cac" data-fmt="brl2cac">CAC</th></tr></thead>
+          <tbody data-draw="tbl"></tbody></table></div>
+      </div>
+      <div class="card" id="top-cpc">
+        <h3>Top 5 anúncios com melhor CPC</h3>
+        <p class="cap">Gasto ÷ cliques no link, entre anúncios com 100 cliques ou mais.</p>
+        <div class="tw"><table data-source="fb_top_cpc" data-row-key="anuncio">
+          <thead><tr><th tabindex="0" data-field="anuncio" data-fmt="ad">Anúncio<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="tipo" data-fmt="tipo">Tipo</th><th tabindex="0" data-field="cliques" data-fmt="int">Cliques</th><th tabindex="0" data-field="ctr" data-fmt="pct2">CTR</th><th tabindex="0" data-field="cpm" data-fmt="brl2">CPM</th><th tabindex="0" data-field="cpc" aria-sort="ascending" data-fmt="brl2">CPC</th></tr></thead>
+          <tbody data-draw="tbl"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="c-dia card" id="fb-campanhas">
+      <h3>Melhores campanhas do Facebook · receita last click</h3>
+      <p class="cap">Campanhas (utm_campaign) com mais receita nos pedidos pagos com último clique no Facebook, com o gasto da mesma campanha no Meta Ads.</p>
+      <div class="tw"><table data-source="fb_campanhas" data-row-key="campanha">
+        <thead><tr><th tabindex="0" data-field="campanha">Campanha<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="gasto" data-fmt="brl">Gasto</th><th tabindex="0" data-field="receita" data-fmt="brl" aria-sort="descending">Receita LC</th><th tabindex="0" data-field="roas" data-fmt="x">ROAS LC</th><th tabindex="0" data-field="pedidos" data-fmt="int">Pedidos</th><th tabindex="0" data-field="novos" data-fmt="int">Novos clientes</th></tr></thead>
+        <tbody data-draw="tbl"></tbody></table></div>
+    </div>
+
+    <div class="c-dia card" id="criativos-estoque">
+      <h3>Principais criativos × estoque do kit</h3>
+      <p class="cap">Os anúncios com mais gasto no período: receita e pedidos last click do anúncio, o kit que ele mais vende e quantos dias o estoque desse kit aguenta no ritmo de venda do kit no período.</p>
+      <div class="tw"><table data-source="criativos_estoque" data-row-key="anuncio" data-limit="5" data-limit-max="15">
+        <thead><tr><th tabindex="0" data-field="anuncio" data-fmt="ad">Anúncio<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="tipo" data-fmt="tipo">Tipo</th><th tabindex="0" data-field="gasto" data-fmt="brl">Gasto</th><th tabindex="0" data-field="receita" aria-sort="descending" data-fmt="brl">Receita LC</th><th tabindex="0" data-field="roas" data-fmt="x">ROAS LC</th><th tabindex="0" data-field="pedidos" data-fmt="int">Pedidos</th><th tabindex="0" data-field="kit_nome" data-fmt="txt">Kit mais vendido</th><th tabindex="0" data-field="estoque_kits" data-fmt="int">Estoque do kit</th><th tabindex="0" data-field="cobertura_dias" data-fmt="dias">Cobertura</th><th tabindex="0" data-field="alerta" data-fmt="alerta">Status</th></tr></thead>
+        <tbody data-draw="tbl"></tbody></table></div>
+      <button type="button" class="more" aria-expanded="false"><span class="m-closed">Ver até o top 15 ▾</span><span class="m-open" hidden>Mostrar só o top 5 ▴</span></button>
+    </div>
+
+    <div class="c-dia grid">
+      <div class="card" id="kits-catalogo">
+        <h3>Top kits do catálogo</h3>
+        <p class="cap">Kits vendidos em pedidos com último clique em anúncios de catálogo (nome começa com CAT).</p>
+        <div class="tw"><table data-source="fb_kits_cat" data-row-key="kit">
+          <thead><tr><th tabindex="0" data-field="kit_nome">Kit<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="kit">SKU</th><th tabindex="0" data-field="kits" data-fmt="int">Kits</th><th tabindex="0" data-field="pmv" data-fmt="brl2">PMV</th><th tabindex="0" data-field="receita" aria-sort="descending" data-fmt="brl">Receita</th></tr></thead>
+          <tbody data-draw="tbl"></tbody></table></div>
+      </div>
+      <div class="card" id="kits-outros">
+        <h3>Top kits dos outros anúncios</h3>
+        <p class="cap">Kits vendidos em pedidos com último clique nos demais anúncios do Facebook (vídeo, estático, influência).</p>
+        <div class="tw"><table data-source="fb_kits_outros" data-row-key="kit">
+          <thead><tr><th tabindex="0" data-field="kit_nome">Kit<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="kit">SKU</th><th tabindex="0" data-field="kits" data-fmt="int">Kits</th><th tabindex="0" data-field="pmv" data-fmt="brl2">PMV</th><th tabindex="0" data-field="receita" aria-sort="descending" data-fmt="brl">Receita</th></tr></thead>
+          <tbody data-draw="tbl"></tbody></table></div>
+      </div>
+    </div>
+    <p class="c-mtd note">Ativações de novos clientes, melhores campanhas, criativos × estoque e kits do catálogo cruzam pedido a pedido e ficam nas abas Hoje e Ontem.</p>
+    <div class="c-nohoje sub-google" id="google">
+      <h3 class="sub-h">Google</h3>
+    <div class="card" id="google-canais">
+      <h3>Google por tipo de campanha</h3>
+      <p class="cap">Receita last click, meta e investimento da planilha de canais.</p>
+      <div class="tw"><table data-source="google_canais" data-row-key="canal">
+        <thead><tr><th tabindex="0" data-field="canal">Tipo<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="receita" aria-sort="descending" data-fmt="brl">Receita LC</th><th tabindex="0" data-field="meta" data-fmt="brl">Meta</th><th tabindex="0" data-field="ating" data-fmt="atg">Ating.</th><th tabindex="0" data-field="invest" data-fmt="brl">Invest.</th><th tabindex="0" data-field="invest_plan" data-fmt="brl">Invest. plano</th><th tabindex="0" data-field="roas" data-fmt="x">ROAS</th><th tabindex="0" data-field="var_yoy" data-fmt="delta">YoY</th></tr></thead>
+        <tbody data-draw="tbl"></tbody></table></div>
+    </div>
+    <div class="card" id="google-camp">
+      <h3>Pedidos last click por campanha do Google</h3>
+      <p class="cap">Campanhas (utm_campaign) com pedidos no período; o investimento por campanha não está em nenhuma fonte conectada.</p>
+      <div class="tw"><table data-source="google_camp" data-row-key="campanha,tipo">
+        <thead><tr><th tabindex="0" data-field="campanha">Campanha<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="tipo" data-fmt="txt">Tipo</th><th tabindex="0" data-field="pedidos" aria-sort="descending" data-fmt="int">Pedidos</th><th tabindex="0" data-field="share" data-fmt="pct">Share Google</th></tr></thead>
+        <tbody data-draw="tbl"></tbody></table></div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ============ CRM ============ -->
+  <section id="crm">
+    <div class="sec-h"><h2><span class="par">(</span> CRM · Email e WhatsApp <span class="par">)</span></h2><p class="cap">Receita last click e meta da planilha de canais (ao vivo em Hoje e Ontem); envios, abertura e cliques do Insider, comparados com a média do mês até ontem.</p></div>
+    <div class="stack">
+      <div class="card" id="email">
+        <span class="pill-crm email">Email</span>
+        <div class="tiles">
+          <div class="tile c-dia"><span class="lb">Receita LC</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=Email" data-field="receita" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais_dia" data-where="canal=Email" data-field="meta" data-fmt="brl">—</span><span class="c-ontem"> · ating. <span data-draw="kv" data-source="canais_dia" data-where="canal=Email" data-field="ating" data-fmt="atg">—</span></span></span></div>
+          <div class="tile c-mtd"><span class="lb">Receita LC</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=Email" data-field="receita" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais" data-where="canal=Email" data-field="meta" data-fmt="brl">—</span> · ating. <span data-draw="kv" data-source="canais" data-where="canal=Email" data-field="ating" data-fmt="atg">—</span></span></div>
+          <div class="tile"><span class="lb">Enviados</span><span class="v" data-draw="kv" data-source="email_resumo" data-row="0" data-field="enviados" data-fmt="int">—</span><span class="s c-dia">vs média diária do mês <span data-draw="kv" data-source="email_resumo" data-row="0" data-field="var_enviados" data-fmt="delta">—</span></span><span class="s c-mtd">entrega <span data-draw="kv" data-source="email_resumo" data-row="0" data-field="taxa_entrega" data-fmt="pct">—</span></span></div>
+          <div class="tile"><span class="lb">Abertura</span><span class="v" data-draw="kv" data-source="email_resumo" data-row="0" data-field="taxa_abertura" data-fmt="pct">—</span><span class="s c-dia">vs média do mês <span data-draw="kv" data-source="email_resumo" data-row="0" data-field="var_abertura" data-fmt="pp">—</span></span><span class="s c-mtd">CTR <span data-draw="kv" data-source="email_resumo" data-row="0" data-field="ctr" data-fmt="pct2">—</span></span></div>
+        </div>
+      </div>
+      <div class="card" id="whatsapp">
+        <span class="pill-crm whats">WhatsApp</span>
+        <div class="tiles">
+          <div class="tile c-dia"><span class="lb">Receita LC</span><span class="v" data-draw="kv" data-source="canais_dia" data-where="canal=WhatsApp" data-field="receita" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais_dia" data-where="canal=WhatsApp" data-field="meta" data-fmt="brl">—</span><span class="c-ontem"> · ating. <span data-draw="kv" data-source="canais_dia" data-where="canal=WhatsApp" data-field="ating" data-fmt="atg">—</span></span></span></div>
+          <div class="tile c-mtd"><span class="lb">Receita LC</span><span class="v" data-draw="kv" data-source="canais" data-where="canal=WhatsApp" data-field="receita" data-fmt="brl">—</span><span class="s">plano <span data-draw="kv" data-source="canais" data-where="canal=WhatsApp" data-field="meta" data-fmt="brl">—</span> · ating. <span data-draw="kv" data-source="canais" data-where="canal=WhatsApp" data-field="ating" data-fmt="atg">—</span></span></div>
+          <div class="tile"><span class="lb">Enviados</span><span class="v" data-draw="kv" data-source="whats_resumo" data-row="0" data-field="enviados" data-fmt="int">—</span><span class="s c-dia">vs média diária do mês <span data-draw="kv" data-source="whats_resumo" data-row="0" data-field="var_enviados" data-fmt="delta">—</span></span><span class="s c-mtd">entrega <span data-draw="kv" data-source="whats_resumo" data-row="0" data-field="taxa_entrega" data-fmt="pct">—</span></span></div>
+          <div class="tile"><span class="lb">Investimento</span><span class="v" data-draw="kv" data-source="whats_resumo" data-row="0" data-field="investimento" data-fmt="brl">—</span><span class="s">enviados × R$ 0,3991</span></div>
+          <div class="tile c-dia"><span class="lb">ROAS LC</span><span class="v" data-draw="kv" data-source="whats_roas_dia" data-row="0" data-field="roas" data-fmt="x" data-accent="x">—</span><span class="s">receita LC ÷ investimento</span></div>
+          <div class="tile c-mtd"><span class="lb">ROAS LC</span><span class="v" data-draw="kv" data-source="whats_roas_mtd" data-row="0" data-field="roas" data-fmt="x" data-accent="x">—</span><span class="s">receita LC ÷ investimento</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="c-dia grid">
+      <div class="card" id="camp-email">
+        <span class="pill-crm email">Email</span>
+        <h3>Top 5 campanhas de email · receita last click</h3>
+        <p class="cap">Pedidos pagos cujo último clique foi um email (utm_campaign = nome da campanha no Insider). Enviados e open rate do Insider. Em Hoje, os disparos feitos hoje aparecem destacados.</p>
+        <div class="tw"><table data-source="camp_email_full" data-row-key="campanha" data-today-col="campanha">
+          <thead><tr><th tabindex="0" data-field="campanha">Campanha de email<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="enviados" data-fmt="int">Enviados</th><th tabindex="0" data-field="open_rate" data-fmt="pct">Open rate</th><th tabindex="0" data-field="pedidos" data-fmt="int">Pedidos</th><th tabindex="0" data-field="receita" aria-sort="descending" data-fmt="brl">Receita LC</th></tr></thead>
+          <tbody data-draw="tbl"></tbody></table></div>
+      </div>
+      <div class="card" id="camp-whats">
+        <span class="pill-crm whats">WhatsApp</span>
+        <h3>Top 5 disparos de WhatsApp · receita last click</h3>
+        <p class="cap">Pedidos pagos cujo último clique foi um WhatsApp (utm_campaign = nome do disparo). Enviados do Insider; ROAS = receita LC ÷ (enviados × R$ 0,3991). Em Hoje, os disparos feitos hoje aparecem destacados.</p>
+        <div class="tw"><table data-source="camp_whats" data-row-key="campanha" data-today-col="campanha">
+          <thead><tr><th tabindex="0" data-field="campanha">Disparo de WhatsApp<span class="rz" aria-hidden="true"></span></th><th tabindex="0" data-field="enviados" data-fmt="int">Enviados</th><th tabindex="0" data-field="pedidos" data-fmt="int">Pedidos</th><th tabindex="0" data-field="receita" aria-sort="descending" data-fmt="brl">Receita LC</th><th tabindex="0" data-field="roas" data-fmt="xw">ROAS LC</th></tr></thead>
+          <tbody data-draw="tbl"></tbody></table></div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <footer class="defs" id="definicoes">
+    <h3>Como ler</h3>
+    <p>Receita = valor pago pelos itens (depois de cupom) + frete, do Magento. Em Hoje vale a boleto condition (pedidos solid, sem SAC, televendas, ItaúShop e Vivino, com boleto a 65% e PIX a 75%; PMV sem o fator); em Ontem e no mês, pedidos pagos. CM2 % = CM2 ÷ receita com frete. PMV = receita das garrafas ÷ garrafas.</p>
+    <p>Pedidos e canais = último clique (vw_ev_last_click_pedido). Em Hoje e Ontem a receita por canal é cruzada pedido a pedido, ao vivo; no mês vem da planilha Monitoramento de Canais.</p>
+    <p>YoY aparece em Ontem (mesmo dia da semana do ano passado, 364 dias antes, que alinha Black com Black) e no mês (mesmas datas do ano passado). Hoje não tem YoY nem atingimento, porque o dia ainda está em andamento.</p>
+    <p>Fontes: Dados Víssimo, Google Sheets (Monitoramento de Canais), Meta Ads (conta Evino Oficial) e Insider One. Cada pessoa vê os números com o próprio acesso a esses conectores.</p>
+  </footer>
+</div>
+
+<script>
+/* ---------- períodos (abas) ---------- */
+(function () {
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const shift = (s, n) => { const [y, m, d] = s.split('-').map(Number); const x = new Date(y, m - 1, d); x.setDate(x.getDate() + n); return iso(x); };
+  const minusYear = (s) => { const [y, m, d] = s.split('-').map(Number); const x = new Date(y - 1, m - 1, Math.min(d, new Date(y - 1, m, 0).getDate())); return iso(x); };
+  function janela(p) {
+    const hoje = iso(new Date());
+    const ontem = shift(hoje, -1);
+    const mtdIni = hoje.slice(0, 8) + '01';
+    const mtdFim = ontem < mtdIni ? hoje : ontem;
+    const PLANO = { '2026-10': '1JcYd-hi0CbZjB3BntL8n-VPH1ZVQZEtn4Prc50XB5cA', '2026-11': '1Gq9dh7KfKH2OXOH3wtwjsbD66J0n_In4BAYtv6nD2nM' };
+    const base = { periodo: p, pago_in: p === 'hoje' ? '(0,1)' : '(1)', hoje, sem_passada: shift(hoje, -7), mtd_ini: mtdIni, mtd_fim: mtdFim, ini_email: shift(p === 'ontem' ? ontem : p === 'mtd' ? mtdIni : hoje, -3) };
+    if (p === 'ontem') return Object.assign(base, { ini: ontem, fim: ontem, ini_yoy: shift(ontem, -364), fim_yoy: shift(ontem, -364), meta_preset: 'yesterday', plano_id: PLANO[(p === 'ontem' ? ontem : p === 'mtd' ? mtdFim : hoje).slice(0, 7)] || PLANO['2026-11'] });
+    if (p === 'mtd') return Object.assign(base, { ini: mtdIni, fim: mtdFim, ini_yoy: minusYear(mtdIni), fim_yoy: minusYear(mtdFim), meta_preset: 'this_month', plano_id: PLANO[(p === 'ontem' ? ontem : p === 'mtd' ? mtdFim : hoje).slice(0, 7)] || PLANO['2026-11'] });
+    return Object.assign(base, { ini: hoje, fim: hoje, ini_yoy: shift(hoje, -364), fim_yoy: shift(hoje, -364), meta_preset: 'today', plano_id: PLANO[(p === 'ontem' ? ontem : p === 'mtd' ? mtdFim : hoje).slice(0, 7)] || PLANO['2026-11'] });
+  }
+  window.WR_janela = janela;
+  dash.setParams(janela(dash.params().periodo || 'hoje'));
+  document.querySelectorAll('.wr .tab').forEach((b) => b.addEventListener('click', () => { dash.setParams(janela(b.dataset.p)); dash.setLink(b.id); }));
+  dash.onData(() => {
+    const p = dash.params().periodo || 'hoje';
+    document.querySelectorAll('.wr .tab').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.p === p)));
+    const show = { 'c-dia': p !== 'mtd', 'c-mtd': p === 'mtd', 'c-hoje': p === 'hoje', 'c-ontem': p === 'ontem', 'c-nohoje': p !== 'hoje' };
+    Object.keys(show).forEach((c) => document.querySelectorAll('.wr .' + c).forEach((el) => { el.hidden = !show[c]; }));
+    /* ids das 5 campanhas de email com mais receita LC, para buscar enviados e open rate no Insider */
+    if (p !== 'mtd') {
+      const ce = dash.data('camp_email');
+      if (ce.status === 'ok') {
+        const ids = ce.data.map((r) => r.campaign_id).filter(Boolean).map(String);
+        const cur = dash.params(), upd = {};
+        for (let k = 1; k <= 5; k++) { const id = ids[k - 1]; if (id && cur['email_id_' + k] !== id) upd['email_id_' + k] = id; }
+        if (Object.keys(upd).length) dash.setParams(upd);
+      }
+    }
+  });
+  const named = location.hash && document.getElementById(location.hash.slice(1));
+  if (named && named.classList.contains('tab')) dash.setParams(janela(named.dataset.p));
+})();
+</script>
+
+<script>
+/* ---------- formatação e desenho ---------- */
+window.WR = (function () {
+  const nf0 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const nf2 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const ok = (v) => v != null && v !== '' && isFinite(v);
+  const sg = (v) => (v > 0 ? '+' : v < 0 ? '−' : '');
+  const F = {
+    txt: (v) => (v == null || v === '' ? '—' : String(v)),
+    int: (v) => (ok(v) ? nf0.format(v) : '—'),
+    brl: (v) => (!ok(v) ? '—' : Math.abs(v) >= 1e6 ? 'R$ ' + nf2.format(v / 1e6) + ' mi' : Math.abs(v) >= 1e4 ? 'R$ ' + nf1.format(v / 1e3) + ' mil' : 'R$ ' + nf0.format(v)),
+    brl2: (v) => (ok(v) ? 'R$ ' + nf2.format(v) : '—'),
+    pct: (v) => (ok(v) ? nf1.format(v * 100) + '%' : '—'),
+    pct0: (v) => (ok(v) ? nf0.format(v * 100) + '%' : '—'),
+    pct2: (v) => (ok(v) ? nf2.format(v * 100) + '%' : '—'),
+    pctn: (v) => (ok(v) ? nf1.format(v) + '%' : '—'),
+    pctn2: (v) => (ok(v) ? nf2.format(v) + '%' : '—'),
+    atg: (v) => (ok(v) ? nf0.format(v * 100) + '%' : '—'),
+    delta: (v) => (ok(v) ? sg(v) + nf0.format(Math.abs(v * 100)) + '%' : '—'),
+    deltainv: (v) => (ok(v) ? sg(v) + nf0.format(Math.abs(v * 100)) + '%' : '—'),
+    pp: (v) => (ok(v) ? sg(v) + nf1.format(Math.abs(v * 100)) + ' p.p.' : '—'),
+    x: (v) => (ok(v) ? nf2.format(v) : '—'),
+    xw: (v) => (ok(v) ? nf2.format(v) : '—'),
+    cm2: (v) => (ok(v) ? nf1.format(v * 100) + '%' : '—'),
+    brlsg: (v) => (!ok(v) ? '—' : (v >= 0 ? '+' : '−') + ' R$ ' + (Math.abs(v) >= 1e4 ? nf1.format(Math.abs(v) / 1e3) + ' mil' : nf0.format(Math.abs(v)))),
+    dias: (v) => (ok(v) ? (v >= 99 ? '99+ dias' : nf0.format(v) + ' dias') : '—'),
+    brl2cac: (v) => (ok(v) ? 'R$ ' + nf2.format(v) : '—'),
+    alerta: (v) => (v == null ? '—' : String(v)),
+  };
+  const CLS = {
+    delta: (v) => (!ok(v) || Math.abs(v) < 0.005 ? 'flat' : v > 0 ? 'up' : 'down'),
+    deltainv: (v) => (!ok(v) || Math.abs(v) < 0.005 ? 'flat' : v < 0 ? 'up' : 'down'),
+    pp: (v) => (!ok(v) || Math.abs(v) < 0.0005 ? 'flat' : v > 0 ? 'up' : 'down'),
+    atg: (v) => (!ok(v) ? '' : v >= 1 ? 'up' : v >= 0.9 ? 'warn' : 'down'),
+    alerta: (v) => (v === 'Crítico' || v === 'Esgotado' ? 'down' : v === 'Atenção' ? 'warn' : v === 'OK' ? 'up' : ''),
+    /* ROAS: contra a referência da linha (ROAS planejado do canal, ou ROAS last click do Facebook no período para anúncios) */
+    x: (v, r) => { if (r && (r.canal === 'Facebook' || r.anuncio != null)) { if (!ok(v)) return ''; return v > 3.7 ? 'up' : v >= 3 ? 'warn' : 'down'; } const ref = r && (r.roas_ref != null ? r.roas_ref : r.roas_plan); if (!ok(v) || !ok(ref) || !ref) return ''; return v >= ref ? 'up' : v >= ref * 0.8 ? 'warn' : 'down'; },
+    /* CM2 %: 29% ou mais é excelente, abaixo de 24% é vermelho */
+    cm2: (v) => (!ok(v) ? '' : v >= 0.29 ? 'up' : v >= 0.24 ? 'warn' : 'down'),
+    dias: (v) => (!ok(v) ? '' : v <= 3 ? 'down' : v < 7 ? 'warn' : 'up'),
+    brlsg: (v) => (!ok(v) ? '' : v >= 0 ? 'up' : 'down'),
+    /* CAC: contra o CAC de novos clientes do Facebook no período (menor é melhor) */
+    brl2cac: (v, r) => { const ref = r && r.cac_ref; if (!ok(v) || !ok(ref)) return ''; return v <= ref ? 'up' : v <= ref * 1.2 ? 'warn' : 'down'; },
+  };
+  function pick(rows, el) {
+    if (el.dataset.row != null) return rows[+el.dataset.row];
+    const w = el.dataset.where;
+    if (!w) return rows[0];
+    const conds = w.split('&').map((kv) => kv.split('=').map(decodeURIComponent));
+    return rows.find((r) => conds.every(([k, v]) => String(r[k]) === v));
+  }
+  const chartBox = (el) => {
+    el.replaceChildren();
+    const w = Math.max(280, el.clientWidth || 600);
+    const h = 220;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${h}`).attr('role', 'img');
+    const tip = d3.select(el).append('div').attr('class', 'tip').style('display', 'none');
+    return { svg, tip, w, h };
+  };
+  const placeTip = (el, tip, x, y) => {
+    const node = tip.node();
+    const bw = el.clientWidth || 600;
+    const tw = node.offsetWidth || 120;
+    tip.style('left', Math.max(0, Math.min(bw - tw, x + 12)) + 'px').style('top', Math.max(0, y - 10) + 'px');
+  };
+  const leftMargin = (svg, labels) => {
+    const t = svg.append('text').attr('class', 'm').style('font-size', '12px');
+    let m = 0;
+    labels.forEach((l) => { t.text(l); m = Math.max(m, t.node().getComputedTextLength()); });
+    t.remove();
+    return Math.ceil(m) + 10;
+  };
+  const styleAxis = (g) => {
+    g.attr('font-size', null).attr('font-family', null);
+    g.selectAll('text').attr('fill', '#7a4a46').style('font-size', '12px').style('font-family', 'EvBarlowSC, sans-serif');
+    g.selectAll('.domain').attr('stroke', '#e8c9bf');
+    g.selectAll('.tick line').attr('stroke', '#f3d9cf');
+  };
+  return { F, CLS, pick, chartBox, placeTip, leftMargin, styleAxis, ok };
+})();
+
+/* valor único (tiles) */
+dash.draw('kv', (el) => {
+  const d = dash.data(el.dataset.source);
+  const fmt = el.dataset.fmt || 'txt';
+  el.classList.remove('up', 'down', 'flat', 'warn');
+  if (d.status !== 'ok') { el.textContent = '—'; el.classList.toggle('dash-skeleton', d.status === 'loading'); return; }
+  el.classList.remove('dash-skeleton');
+  const row = WR.pick(d.data || [], el);
+  const v = row ? row[el.dataset.field] : null;
+  const final = WR.F[fmt] ? WR.F[fmt](v) : String(v ?? '—');
+  const big = el.classList.contains('v') || el.classList.contains('big');
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (big && !reduce && WR.ok(v) && WR.F[fmt] && el.dataset.shown !== String(v)) {
+    const from = WR.ok(+el.dataset.shown) ? +el.dataset.shown : 0;
+    const t0 = performance.now(), dur = 700, token = (el._anim = (el._anim || 0) + 1);
+    const step = (t) => { if (el._anim !== token) return; const k = Math.min(1, (t - t0) / dur); const e = 1 - Math.pow(1 - k, 3); el.textContent = k < 1 ? WR.F[fmt](from + (v - from) * e) : final; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  } else { el._anim = (el._anim || 0) + 1; el.textContent = final; }
+  el.dataset.shown = WR.ok(v) ? String(v) : '';
+  const c = WR.CLS[fmt] ? WR.CLS[fmt](v, row) : '';
+  if (c) el.classList.add(c);
+  if (el.dataset.accent) { const box = el.closest('.tile, .atg-box'); if (box) { box.classList.remove('acc-up', 'acc-warn', 'acc-down'); if (c && c !== 'flat') box.classList.add('acc-' + c); } }
+});
+
+/* tabelas: ordenáveis pelo cabeçalho, cores de status e barras de receita */
+const CELL = { x: 1, cm2: 1, dias: 1, atg: 1, brl2cac: 1 };
+dash.draw('tbl', (tb) => {
+  const table = tb.closest('table');
+  if (!table) return;
+  const id = table.dataset.source;
+  const key = table.dataset.rowKey;
+  const ths = Array.from(table.querySelectorAll('thead th'));
+  const cols = ths.map((th) => ({ f: th.dataset.field, fmt: th.dataset.fmt || 'txt', sort: th.getAttribute('aria-sort') }));
+  const d = dash.data(id);
+  tb.replaceChildren();
+  if (d.status !== 'ok') { if (d.status === 'loading') { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = cols.length; td.className = 'dash-skeleton'; td.textContent = '—'; } return; }
+  let rows = (d.data || []).slice();
+  const sc = cols.find((c) => c.sort === 'ascending' || c.sort === 'descending');
+  if (sc) {
+    const dir = sc.sort === 'ascending' ? 1 : -1;
+    const tot = rows.filter((r) => r.canal === 'Total');
+    rows = rows.filter((r) => r.canal !== 'Total').sort((a, b) => {
+      const x = a[sc.f], y = b[sc.f];
+      if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+      return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')) * dir;
+    }).concat(tot);
+  }
+  if (table.dataset.filterBtn) {
+    const fb = document.querySelector('.wr ' + table.dataset.filterBtn + '[aria-pressed="true"]');
+    if (fb) rows = rows.filter((r) => String(r[table.dataset.filterCol]) === fb.dataset.v);
+  }
+  if (table.dataset.limit) {
+    const btn = table.closest('.card') && table.closest('.card').querySelector('.more');
+    const open = btn && btn.getAttribute('aria-expanded') === 'true';
+    rows = rows.slice(0, open ? +(table.dataset.limitMax || 15) : +table.dataset.limit);
+  }
+  const maxRec = {};
+  cols.filter((c) => c.f === 'receita' || c.f === 'gasto').forEach((c) => { maxRec[c.f] = Math.max(0, ...rows.filter((r) => r.canal !== 'Total').map((r) => +r[c.f] || 0)); });
+  rows.forEach((r) => {
+    const tr = tb.insertRow();
+    tr.dataset.key = key.includes(',') ? key.split(',').map((k) => encodeURIComponent(r[k])).join(',') : r[key];
+    if (r.canal === 'Total') tr.className = 'tot';
+    const todayCol = table.dataset.todayCol, P = dash.params();
+    const isToday = todayCol && P.periodo === 'hoje' && P.hoje && String(r[todayCol] || '').startsWith(P.hoje.replace(/-/g, ''));
+    if (isToday) tr.classList.add('hoje');
+    cols.forEach((c) => {
+      const td = tr.insertCell();
+      const v = r[c.f];
+      const txt = WR.F[c.fmt] ? WR.F[c.fmt](v) : String(v ?? '—');
+      const k = WR.CLS[c.fmt] ? WR.CLS[c.fmt](v, r) : '';
+      if (c.fmt === 'alerta' && v != null) { const b = document.createElement('span'); b.className = 'badge ' + (k || 'neutral'); b.textContent = txt; td.appendChild(b); }
+      else if (c.fmt === 'ad' && v) {
+        const parts = String(v).split('-');
+        const nm = document.createElement('span'); nm.className = 'nm'; nm.title = String(v); td.appendChild(nm);
+        if (/influ/i.test(String(v))) { const i = document.createElement('span'); i.className = 'influ'; i.title = 'Anúncio de influenciador'; i.setAttribute('role', 'img'); i.setAttribute('aria-label', 'influenciador'); i.innerHTML = '<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path fill="currentColor" d="M8 1.5l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.3l-3.8 2 .7-4.3-3.1-3 4.3-.6z"/></svg>'; nm.appendChild(i); }
+        const b = document.createElement('b'); b.textContent = parts.length >= 3 ? parts[2] : String(v); nm.appendChild(b);
+        td.className = 'ad';
+      }
+      else if (c.fmt === 'tipo' && v) {
+        const tp = document.createElement('span'); tp.className = 'tp ' + ({ 'Vídeo': 'vid', 'Estático': 'est', 'Catálogo': 'cat' }[v] || 'out'); tp.textContent = v; td.appendChild(tp); td.className = 'tipo';
+      }
+      else if (c === cols[0] && c.f !== 'pos' || c.f === 'nome') { const nm = document.createElement('span'); nm.className = 'nm'; nm.title = txt; if (isToday) { const t = document.createElement('span'); t.className = 'tag-hoje'; t.textContent = 'Hoje'; nm.appendChild(t); } nm.appendChild(document.createTextNode(txt)); td.appendChild(nm); }
+      else td.textContent = txt;
+      if (c.fmt === 'txt' && c !== cols[0]) td.className = 't';
+      if (k && c.fmt !== 'alerta') td.classList.add(CELL[c.fmt] && r.canal !== 'Total' ? 'cell-' + k : k);
+      if (maxRec[c.f] && r.canal !== 'Total' && WR.ok(v)) { const p = Math.max(0, Math.min(100, (v / maxRec[c.f]) * 100)); td.style.background = `linear-gradient(90deg, ${c.f === 'gasto' ? 'rgba(241,112,65,.22)' : 'rgba(143,176,242,.45)'} ${p}%, transparent ${p}%)`; }
+    });
+  });
+  if (!rows.length) { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = cols.length; td.className = 't'; td.textContent = 'Sem linhas no período.'; }
+});
+document.querySelectorAll('.wr .fx-sku').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('.wr .fx-sku').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+  dash.draw('tbl');
+}));
+document.querySelectorAll('.wr .more').forEach((b) => b.addEventListener('click', () => {
+  const open = b.getAttribute('aria-expanded') !== 'true';
+  b.setAttribute('aria-expanded', String(open));
+  b.querySelectorAll('.m-closed').forEach((x) => { x.hidden = open; });
+  b.querySelectorAll('.m-open').forEach((x) => { x.hidden = !open; });
+  dash.draw('tbl');
+}));
+document.querySelectorAll('.wr table thead').forEach((thead) => {
+  const sortBy = (th) => {
+    const cur = th.getAttribute('aria-sort');
+    const next = cur === 'descending' ? 'ascending' : 'descending';
+    thead.querySelectorAll('th').forEach((o) => o.removeAttribute('aria-sort'));
+    th.setAttribute('aria-sort', next);
+    dash.draw('tbl');
+  };
+  thead.addEventListener('click', (ev) => { if (ev.target.closest('.rz')) return; const th = ev.target.closest('th'); if (th) sortBy(th); });
+  thead.querySelectorAll('.rz').forEach((rz) => {
+    rz.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      const table = thead.closest('table'); const th = rz.closest('th');
+      const x0 = ev.clientX, w0 = th.getBoundingClientRect().width - 16;
+      const move = (e) => table.style.setProperty('--namew', Math.max(80, Math.min(600, w0 + e.clientX - x0)) + 'px');
+      const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+      window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+    });
+  });
+  thead.addEventListener('keydown', (ev) => { if (ev.key !== 'Enter' && ev.key !== ' ') return; const th = ev.target.closest('th'); if (th) { ev.preventDefault(); sortBy(th); } });
+});
+
+/* faixas por grupo de canal: barras horizontais por grupo, valor e share expostos; largura = share da faixa no grupo */
+(function () {
+  const COR = { '0 - 30': '#f4a384', '30 - 50': '#f17041', '50 - 100': '#f9182d', 'Acima de 100': '#751614', 'Outros': '#b9a19b' };
+  const ORD = ['0 - 30', '30 - 50', '50 - 100', 'Acima de 100'];
+  let M = 'receita';
+  dash.draw('piramide', (el) => {
+    const d = dash.data('piramide');
+    if (d.status !== 'ok' || !d.data.length) { el.innerHTML = `<p class="cap">${d.status === 'loading' ? 'Carregando pedidos e último clique…' : d.status === 'ok' ? 'Sem pedidos no período.' : 'Não consegui ler os pedidos agora.'}</p>`; return; }
+    const sk = M === 'receita' ? 'share_receita' : 'share_volume';
+    const fmtTot = (r) => (M === 'receita' ? WR.F.brl(r.receita_grupo) : WR.F.int(r.volume_grupo) + ' garrafas');
+    const mx = Math.max(0.0001, ...d.data.filter((r) => r.faixa !== 'Outros').map((r) => r[sk] || 0));
+    el.innerHTML = ['Growth', 'CRM', 'Outros/Orgânico'].map((g) => {
+      const rs = d.data.filter((r) => r.grupo === g);
+      const by = Object.fromEntries(rs.map((r) => [r.faixa, r]));
+      const lv = (f, cls) => { const r = by[f] || {}; const v = r[sk] || 0; const val = M === 'receita' ? WR.F.brl(r.receita) : WR.F.int(r.volume); return `<div class="lv ${cls || ''}"><span class="fx">${f === 'Acima de 100' ? '100+' : f}</span><div class="tr"><div class="bl" style="width:calc((100% - 120px) * ${(v / mx).toFixed(4)})"></div><span class="vv"><b>${val}</b><span>${WR.F.pct(v)}</span></span></div></div>`.replace('class="bl" style="', `class="bl" style="background:${COR[f]};`); };
+      const kg = dash.data('kits_grupo');
+      const kr = kg.status === 'ok' ? kg.data.filter((r) => r.grupo === g) : [];
+      const kits = kg.status !== 'ok' ? `<p class="cap">${kg.status === 'loading' ? 'Carregando kits…' : '—'}</p>` : !kr.length ? '<p class="cap">Sem kits no período.</p>'
+        : `<ol class="kg">${kr.map((r) => `<li><span class="kn" title="${String(r.kit_nome).replace(/"/g, '&quot;')} · ${r.kit}">${String(r.kit_nome).replace(/</g, '&lt;')}</span><span class="kv"><b>${WR.F.brl(r.receita)}</b><span>${WR.F.pct(r.share)}</span><span>${WR.ok(r.kits_vendidos) ? WR.F.int(r.kits_vendidos) + ' kits' : ''}</span></span></li>`).join('')}</ol>`;
+      return `<div class="pg"><h4>${g}<span>${rs.length ? fmtTot(rs[0]) : '—'}</span></h4><div class="pr">${ORD.map((f) => lv(f)).join('')}${(by['Outros'] || {})[sk] ? lv('Outros', 'out') : ''}</div><h5>Top 5 kits</h5>${kits}</div>`;
+    }).join('');
+  });
+  document.querySelectorAll('.wr .pm-m').forEach((b) => b.addEventListener('click', () => {
+    M = b.dataset.m; document.querySelectorAll('.wr .pm-m').forEach((o) => o.setAttribute('aria-pressed', String(o === b))); dash.draw('piramide');
+  }));
+})();
+
+/* Todos os canais: grupos recolhíveis, ordenação dentro do grupo, resumo × detalhes */
+(function () {
+  const S = { sort: null, dir: -1, closed: {}, det: false };
+  const F = WR.F;
+  const brlT = (v) => (!WR.ok(v) ? '–' : Math.abs(v) >= 1e6 ? 'R$ ' + (v / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mi' : Math.abs(v) >= 1e3 ? 'R$ ' + (v / 1e3).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' mil' : 'R$ ' + Math.round(v).toLocaleString('pt-BR'));
+  const x2 = (v) => (WR.ok(v) ? v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '–');
+  const pct0 = (v) => (WR.ok(v) ? Math.round(v * 100) + '%' : '–');
+  const pct1 = (v) => (WR.ok(v) ? (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%' : '–');
+  const col = (a, inv) => { if (!WR.ok(a)) return '#9b7b75'; const p = Math.round(a * 100); const st = inv ? (p <= 100 ? 'g' : p <= 110 ? 'w' : 'b') : (p >= 100 ? 'g' : p >= 90 ? 'w' : 'b'); return { g: '#2e9e57', w: '#d39a1a', b: '#e5484d' }[st]; };
+  const dl = (v) => { if (!WR.ok(v)) return '<span class="ar flat">●</span> –'; const p = v * 100; const t = p > 300 ? '&gt; +300%' : p < -300 ? '&lt; −300%' : (Math.abs(p) < 0.5 ? '0%' : (p > 0 ? '+' : '−') + Math.round(Math.abs(p)) + '%'); const c = Math.abs(p) < 0.5 ? 'flat' : p > 0 ? 'up' : 'down'; return `<span class="ar ${c}">${c === 'flat' ? '●' : c === 'up' ? '▲' : '▼'}</span> <span class="${c}">${t}</span>`; };
+  const esc = (t) => String(t == null ? '' : t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const MAP = { Facebook: 1, Criteo: 1, Shopping: 1, SEM_NonBranded: 1, SEM_Branded: 1, Afiliados: 1, Bing: 1, DemandGen: 1, Tiktok: 1, Display: 1, Mailer: 1, AppPush: 1, Email: 1, SMS: 1, WebPush: 1, WhatsApp: 1 };
+  function cm2Map() {
+    const d = dash.data('canal_sku');
+    if (d.status !== 'ok') return { st: d.status };
+    const m = {}; (d.data || []).forEach((r) => { const k = MAP[r.canal] ? r.canal : 'Outros'; const o = m[k] || (m[k] = { rec: 0, cm2: 0 }); o.rec += r.rec + r.frete; o.cm2 += r.cm2; });
+    return { st: 'ok', m };
+  }
+  const cm2Of = (C, chaves) => { if (C.st !== 'ok') return null; let r = 0, c = 0; chaves.split(',').forEach((k) => { const o = C.m[k]; if (o) { r += o.rec; c += o.cm2; } }); return r ? c / r : null; };
+  const empty = (o) => !(o.rec || o.rec_meta || o.inv || o.inv_meta);
+  function cells(o, C) {
+    const cm2 = cm2Of(C, o.chaves);
+    const cm2Cell = `<td class="sep">${C.st === 'ok' ? pct1(cm2) : C.st === 'loading' ? '<span class="flat">…</span>' : '–'}</td>`;
+    const a = o.ating;
+    const bar = (v, inv) => `<div class="cbar"><i style="width:${Math.min(100, Math.max(0, Math.round((v || 0) * 100)))}%;background:${col(v, inv)}"></i></div>`;
+    const semMidia = !(o.inv || o.inv_meta);
+    const roasCls = o.pendente ? 'parcial' : !WR.ok(o.roas) || !o.roas_meta ? '' : o.roas >= o.roas_meta ? 'hit' : 'miss';
+    if (!S.det) {
+      const rec = `<td><div class="rv">${brlT(o.rec)}</div>${o.rec_meta ? `<div class="rm">${bar(a)}<span>${pct0(a)}</span><span>de ${brlT(o.rec_meta)}</span></div>` : '<div class="rm">sem meta</div>'}</td>`;
+      const inv = semMidia ? '<td class="sep nm2" colspan="2">sem mídia</td>' : `<td class="sep"><div class="rv">${brlT(o.inv)}</div><div class="rm">${WR.ok(o.inv_ating) ? `<span style="color:${col(o.inv_ating, true)};font-weight:700">${pct0(o.inv_ating)}</span> da meta` : 'sem meta'}</div></td><td class="${roasCls}"><div class="rv">${x2(o.roas)}</div><div class="rm">${o.pendente ? 'parcial' : 'meta ' + x2(o.roas_meta)}</div></td>`;
+      const shp = WR.ok(o.share) && WR.ok(o.share_meta) ? o.share - o.share_meta : null;
+      return rec + `<td><div class="rv">${pct1(o.share)}</div><div class="rm">meta ${pct1(o.share_meta)}${WR.ok(shp) && Math.abs(shp) >= 0.0005 ? ` <span class="${shp > 0 ? 'up' : 'down'}">${shp > 0 ? '+' : '−'}${(Math.abs(shp) * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} p.p.</span>` : ''}</div></td>` + inv + cm2Cell + `<td>${dl(o.var_yoy)}</td>`;
+    }
+    const pp = WR.ok(o.roas_pp) ? `<span class="${Math.abs(o.roas_pp) < 0.005 ? 'flat' : o.roas_pp > 0 ? 'up' : 'down'}">${(o.roas_pp > 0 ? '+' : o.roas_pp < 0 ? '−' : '') + x2(Math.abs(o.roas_pp))}</span>` : '–';
+    return `<td>${brlT(o.rec)}</td><td>${brlT(o.rec_meta)}</td><td><span style="color:${col(a)};font-weight:700">${pct0(a)}</span></td><td class="sep">${pct1(o.share)}</td><td>${pct1(o.share_meta)}</td>`
+      + `<td class="sep">${brlT(o.inv)}</td><td>${brlT(o.inv_meta)}</td><td>${WR.ok(o.inv_ating) ? `<span style="color:${col(o.inv_ating, true)};font-weight:700">${pct0(o.inv_ating)}</span>` : '–'}</td>`
+      + `<td class="sep ${roasCls}">${x2(o.roas)}${o.pendente ? ' <small>parcial</small>' : ''}</td><td>${x2(o.roas_meta)}</td><td>${pp}</td>`
+      + cm2Cell + `<td class="sep">${dl(o.var_yoy)}</td><td>${dl(o.var_inv_yoy)}</td>`;
+  }
+  const HEAD = () => S.det
+    ? [['rec', 'Real', 'Receita LC', 3], ['rec_meta', 'Meta'], ['ating', 'ATG'], ['share', 'Real', 'Share de receita', 2], ['share_meta', 'Meta'], ['inv', 'Real', 'Investimento', 3], ['inv_meta', 'Meta'], ['inv_ating', 'ATG'], ['roas', 'Real', 'ROAS', 3], ['roas_meta', 'Meta'], ['roas_pp', '∆'], ['cm2', 'CM2 %', '', 1], ['var_yoy', 'Receita YoY', '', 1], ['var_inv_yoy', 'Invest YoY', '', 1]]
+    : [['rec', 'Receita LC'], ['share', 'Share'], ['inv', 'Investimento'], ['roas', 'ROAS'], ['cm2', 'CM2 %'], ['var_yoy', 'Receita YoY']];
+  dash.draw('canais_todos', (el) => {
+    const d = dash.data('canais_todos');
+    if (d.status !== 'ok') { if (!el.querySelector('table')) el.innerHTML = `<p class="cap">${d.status === 'loading' ? 'Carregando…' : 'Sem dados da planilha agora.'}</p>`; return; }
+    const C = cm2Map();
+    const rows = d.data || [];
+    const val = (o, k) => (k === 'cm2' ? cm2Of(C, o.chaves) : o[k]);
+    const sortK = (arr) => (!S.sort ? arr : arr.slice().sort((a, b) => { const va = val(a, S.sort), vb = val(b, S.sort); if (va == null && vb == null) return 0; if (va == null) return 1; if (vb == null) return -1; return (va - vb) * S.dir; }));
+    const name = (o) => esc(o.canal) + (o.pendente ? '<span class="pend" title="Investimento sem lançamento em algum dia do período">invest pendente</span>' : '');
+    let body = '';
+    rows.filter((r) => r.nivel === 'grupo').forEach((g) => {
+      const kids = sortK(rows.filter((r) => r.nivel === 'canal' && r.grupo === g.grupo && !empty(r)));
+      const open = !S.closed[g.grupo];
+      const nm = kids.length ? `<button type="button" class="grp" data-g="${esc(g.grupo)}" aria-expanded="${open}"><span class="car">▼</span>${esc(g.grupo)}</button>` : name(g);
+      body += `<tr class="g"><td>${nm}</td>${cells(g, C)}</tr>`;
+      if (open) kids.forEach((c) => { body += `<tr><td class="child">${name(c)}</td>${cells(c, C)}</tr>`; });
+    });
+    const t = rows.find((r) => r.nivel === 'total'); if (t) body += `<tr class="tot"><td>Total</td>${cells(t, C)}</tr>`;
+    const H = HEAD();
+    const th = (h) => `<th tabindex="0" data-k="${h[0]}"${S.sort === h[0] ? ` aria-sort="${S.dir < 0 ? 'descending' : 'ascending'}"` : ''}${h[3] || h[0] === 'inv' || h[0] === 'cm2' ? ' class="sep"' : ''}>${h[1]}</th>`;
+    let top = '';
+    if (S.det) { top = '<tr><th class="gh"></th>'; H.forEach((h) => { if (h[3]) top += `<th class="gh sep" colspan="${h[3]}">${h[2]}</th>`; }); top += '</tr>'; }
+    el.innerHTML = `<table class="ct"><thead>${top}<tr><th data-k="">Canal</th>${H.map(th).join('')}</tr></thead><tbody>${body}</tbody></table>`;
+  });
+  document.addEventListener('click', (ev) => {
+    const wrap = ev.target.closest && ev.target.closest('.wr .ct-wrap, .wr #canais-todos .btn-det');
+    if (!wrap) return;
+    if (wrap.classList.contains('btn-det')) { S.det = !S.det; wrap.setAttribute('aria-pressed', String(S.det)); wrap.textContent = S.det ? 'Ver resumo' : 'Ver detalhes'; dash.draw('canais_todos'); return; }
+    const g = ev.target.closest('.grp'); if (g) { S.closed[g.dataset.g] = !S.closed[g.dataset.g]; dash.draw('canais_todos'); return; }
+    const th = ev.target.closest('th[data-k]'); if (th && th.dataset.k) { if (S.sort === th.dataset.k) S.dir = -S.dir; else { S.sort = th.dataset.k; S.dir = -1; } dash.draw('canais_todos'); }
+  });
+  document.addEventListener('keydown', (ev) => { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('.wr .ct th[data-k]')) { ev.preventDefault(); ev.target.click(); } });
+})();
+
+/* resumo e períodos */
+dash.draw('resumo', (el) => {
+  const d = dash.data('kpis');
+  if (d.status !== 'ok' || !d.data.length) { el.textContent = '—'; return; }
+  const k = d.data[0];
+  const nome = { hoje: 'Hoje', ontem: 'Ontem', mtd: 'No mês até ontem' }[dash.params().periodo] || 'No período';
+  const yoy = dash.params().periodo === 'hoje' ? '' : `, ${WR.F.delta(k.var_receita)} contra o ano passado`;
+  el.textContent = `${nome}: ${WR.F.brl(k.receita)} de receita em ${WR.F.int(k.pedidos)} pedidos${yoy}, CM2 de ${WR.F.pct(k.cm2_pct)}.`;
+});
+const brDate = (s) => (s ? s.slice(8, 10) + '/' + s.slice(5, 7) + '/' + s.slice(0, 4) : '—');
+dash.draw('per', (el) => { const p = dash.params(); el.textContent = p.ini === p.fim ? brDate(p.ini) : brDate(p.ini) + ' a ' + brDate(p.fim); });
+dash.draw('per_yoy', (el) => { const p = dash.params(); el.textContent = p.ini_yoy === p.fim_yoy ? brDate(p.ini_yoy) : brDate(p.ini_yoy) + ' a ' + brDate(p.fim_yoy); });
+</script>
+
+<script>
+/* ---------- gráficos ---------- */
+dash.draw('ch_hora', (el) => {
+  const d = dash.data('hora');
+  el.replaceChildren();
+  if (d.status !== 'ok' || !d.data.length) return;
+  const rows = d.data;
+  const { svg, tip, w, h } = WR.chartBox(el);
+  const max = d3.max(rows, (r) => Math.max(r.real_acum || 0, r.plano_acum || 0)) || 1;
+  const y = d3.scaleLinear([0, max * 1.08], [h - 24, 10]).nice();
+  const ml = WR.leftMargin(svg, y.ticks(4).map(WR.F.brl));
+  const x = d3.scaleLinear([0, 23], [ml, w - 96]);
+  const ga = svg.append('g').attr('transform', `translate(${ml},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(WR.F.brl).tickSize(-(w - 96 - ml)));
+  WR.styleAxis(ga); ga.select('.domain').remove();
+  const gx = svg.append('g').attr('transform', `translate(0,${h - 24})`).call(d3.axisBottom(x).ticks(Math.min(12, Math.floor(w / 60))).tickFormat((v) => v + 'h'));
+  WR.styleAxis(gx);
+  const line = (k) => d3.line().defined((r) => r[k] != null).x((r) => x(r.hora)).y((r) => y(r[k]));
+  svg.append('path').datum(rows).attr('d', line('plano_acum')).attr('fill', 'none').attr('stroke', '#751614').attr('stroke-width', 2).attr('stroke-dasharray', '5 4');
+  svg.append('path').datum(rows).attr('d', line('real_acum')).attr('fill', 'none').attr('stroke', '#f9182d').attr('stroke-width', 2.5).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
+  const lastR = rows.filter((r) => r.real_acum != null).pop();
+  const lastP = rows.filter((r) => r.plano_acum != null).pop();
+  const lab = (r, k, txt, color, dy) => { if (r && r[k] != null) svg.append('text').attr('x', x(r.hora) + 6).attr('y', y(r[k]) + dy).text(txt + ' ' + WR.F.brl(r[k])).attr('fill', color).style('font-size', '12px').style('font-weight', 600); };
+  lab(lastP, 'plano_acum', 'plano', '#751614', 4);
+  if (lastR && (!lastP || x(lastP.hora) - x(lastR.hora) > 110 || Math.abs(y(lastR.real_acum) - y(lastP.plano_acum)) > 14)) lab(lastR, 'real_acum', 'real', '#f9182d', -6);
+  const dot = svg.append('circle').attr('r', 4).attr('fill', '#f9182d').style('display', 'none');
+  svg.append('rect').attr('x', ml).attr('y', 0).attr('width', w - 96 - ml).attr('height', h - 24).attr('fill', 'transparent')
+    .on('mousemove', (ev) => {
+      const [mx, my] = d3.pointer(ev);
+      const hr = Math.max(0, Math.min(23, Math.round(x.invert(mx))));
+      const r = rows.find((q) => q.hora === hr);
+      if (!r) return;
+      tip.style('display', null).html('');
+      tip.append('div').attr('class', 'd').text('Até ' + hr + 'h59');
+      tip.append('div').text('Real acumulado: ' + WR.F.brl(r.real_acum));
+      tip.append('div').text('Planejado acumulado: ' + WR.F.brl(r.plano_acum));
+      tip.append('div').text('Atingimento: ' + WR.F.atg(r.ating_acum));
+      tip.append('div').text('Na hora: ' + WR.F.brl(r.real_hora) + ' de ' + WR.F.brl(r.plano_hora));
+      if (r.real_acum != null) dot.style('display', null).attr('cx', x(hr)).attr('cy', y(r.real_acum)); else dot.style('display', 'none');
+      WR.placeTip(el, tip, mx * (el.clientWidth / w), my * (el.clientWidth / w));
+    })
+    .on('mouseleave', () => { tip.style('display', 'none'); dot.style('display', 'none'); });
+});
+
+dash.draw('ch_faixa', (el) => {
+  const d = dash.data('faixas');
+  el.replaceChildren();
+  if (d.status !== 'ok' || !d.data.length) return;
+  const btn = document.querySelector('.wr .fx-m[aria-pressed="true"]');
+  const m = btn ? btn.dataset.m : 'receita';
+  const K = m === 'volume' ? { r: 'volume', p: 'volume_plan', a: 'ating_vol', g: 'gap_vol', f: (v) => WR.F.int(v) + ' gf', fg: (v) => (v >= 0 ? '+' : '−') + WR.F.int(Math.abs(v)) + ' gf' } : { r: 'receita', p: 'receita_plan', a: 'ating', g: 'gap', f: WR.F.brl, fg: WR.F.brlsg };
+  const rows = d.data;
+  const COR = { '0 - 30': '#f4a384', '30 - 50': '#f17041', '50 - 100': '#f9182d', 'Acima de 100': '#751614', 'Outros': '#b9a19b' };
+  const w = Math.max(300, el.clientWidth || 600), rh = 52, h = rows.length * rh + 30;
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${h}`).attr('role', 'img');
+  const tip = d3.select(el).append('div').attr('class', 'tip').style('display', 'none');
+  const ml = WR.leftMargin(svg, rows.map((r) => r.faixa)) + 6;
+  const lab = 150;
+  const max = d3.max(rows, (r) => Math.max(r[K.r] || 0, r[K.p] || 0)) || 1;
+  const x = d3.scaleLinear([0, max * 1.02], [ml, w - lab]);
+  const gx = svg.append('g').attr('transform', `translate(0,${h - 22})`).call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((w - ml - lab) / 110))).tickFormat(m === 'volume' ? (v) => WR.F.int(v) : WR.F.brl).tickSize(-(h - 30)));
+  WR.styleAxis(gx); gx.select('.domain').remove();
+  rows.forEach((r, i) => {
+    const y = 8 + i * rh, bh = 26, cy = y + bh / 2;
+    svg.append('text').attr('x', ml - 8).attr('y', cy + 4).attr('text-anchor', 'end').text(r.faixa).attr('fill', '#270d0f').style('font-size', '14px').style('font-family', 'EvBarlowSC, sans-serif');
+    if (r[K.p]) svg.append('rect').attr('x', ml).attr('y', y - 3).attr('width', x(r[K.p]) - ml).attr('height', bh + 6).attr('rx', 6).attr('fill', '#f6ece8');
+    svg.append('rect').attr('class', 'real').attr('x', ml).attr('y', y).attr('width', Math.max(0, x(r[K.r] || 0) - ml)).attr('height', bh).attr('rx', 6).attr('fill', COR[r.faixa] || '#b9a19b');
+    if (r[K.p]) svg.append('line').attr('x1', x(r[K.p])).attr('x2', x(r[K.p])).attr('y1', y - 8).attr('y2', y + bh + 8).attr('stroke', '#270d0f').attr('stroke-width', 2.5).attr('stroke-linecap', 'round');
+    const end = Math.max(x(r[K.r] || 0), r[K.p] ? x(r[K.p]) : 0) + 10;
+    const a = r[K.a], st = WR.CLS.atg(a);
+    svg.append('text').attr('x', end).attr('y', cy).text(WR.F.atg(a)).attr('fill', st === 'up' ? '#2f6f57' : st === 'warn' ? '#a35f00' : st === 'down' ? '#d1182b' : '#270d0f').style('font-size', '15px').style('font-weight', 700);
+    svg.append('text').attr('x', end).attr('y', cy + 16).text(r[K.g] != null ? K.fg(r[K.g]) : '').attr('fill', '#7a4a46').style('font-size', '12px');
+    svg.append('rect').attr('x', 0).attr('y', y - 8).attr('width', w).attr('height', rh).attr('fill', 'transparent')
+      .on('mousemove', (ev) => { const [mx, my] = d3.pointer(ev, svg.node()); tip.style('display', null).html(''); tip.append('div').attr('class', 'd').text(r.faixa); tip.append('div').text('Real: ' + K.f(r[K.r])); tip.append('div').text('Planejado: ' + K.f(r[K.p])); tip.append('div').text('Atingimento: ' + WR.F.atg(a)); WR.placeTip(el, tip, mx * (el.clientWidth / w), my * (el.clientWidth / w)); })
+      .on('mouseleave', () => tip.style('display', 'none'));
+  });
+});
+dash.draw('ch_share', (el) => {
+  const d = dash.data('faixas');
+  el.replaceChildren();
+  if (d.status !== 'ok' || !d.data.length) return;
+  const m = el.dataset.metric === 'volume' ? ['volume', 'volume_plan'] : ['receita', 'receita_plan'];
+  const fmt = el.dataset.metric === 'volume' ? (v) => WR.F.int(v) + ' gf' : WR.F.brl;
+  const rows = d.data.filter((r) => r.faixa !== 'Total');
+  const COR = { '0 - 30': '#f4a384', '30 - 50': '#f17041', '50 - 100': '#f9182d', 'Acima de 100': '#751614', 'Outros': '#b9a19b' };
+  const TXT = { '0 - 30': '#270d0f', '30 - 50': '#fff', '50 - 100': '#fff', 'Acima de 100': '#fff', 'Outros': '#270d0f' };
+  const w = Math.max(280, el.clientWidth || 500), h = 140;
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${h}`).attr('role', 'img');
+  const tip = d3.select(el).append('div').attr('class', 'tip').style('display', 'none');
+  const ml = WR.leftMargin(svg, ['Realizado']) + 6;
+  [['Plano', m[1], 22], ['Realizado', m[0], 82]].forEach(([lab, k, y]) => {
+    const tot = rows.reduce((s, r) => s + (r[k] || 0), 0);
+    svg.append('text').attr('x', ml - 8).attr('y', y + 23).attr('text-anchor', 'end').text(lab).attr('fill', '#7a4a46').style('font-size', '13px').style('font-family', 'EvBarlowSC, sans-serif');
+    if (!tot) return;
+    let x0 = ml; const W = w - ml - 4;
+    rows.forEach((r) => {
+      const sh = (r[k] || 0) / tot, bw = sh * W;
+      if (bw <= 0) return;
+      svg.append('rect').attr('class', 'seg').attr('x', x0).attr('y', y).attr('width', Math.max(0, bw - 2)).attr('height', 38).attr('rx', 4).attr('fill', COR[r.faixa] || '#b9a19b')
+        .on('mousemove', (ev) => { const [mx, my] = d3.pointer(ev, svg.node()); tip.style('display', null).html(''); tip.append('div').attr('class', 'd').text(r.faixa + ' · ' + lab); tip.append('div').text('Share: ' + WR.F.pct(sh)); tip.append('div').text(fmt(r[k])); WR.placeTip(el, tip, mx * (el.clientWidth / w), my * (el.clientWidth / w)); })
+        .on('mouseleave', () => tip.style('display', 'none'));
+      if (bw > 34) svg.append('text').attr('x', x0 + bw / 2).attr('y', y + 24).attr('text-anchor', 'middle').text(WR.F.pct0(sh)).attr('fill', TXT[r.faixa] || '#fff').style('font-size', '13px').style('font-weight', 700).style('pointer-events', 'none');
+      x0 += bw;
+    });
+  });
+});
+dash.draw('faixa_nota', (el) => {
+  const d = dash.data('faixas');
+  if (d.status !== 'ok' || !d.data.length) { el.textContent = '—'; return; }
+  const t = d.data.find((r) => r.faixa === 'Total') || d.data[0];
+  el.textContent = t.plano_linear ? 'A diarização deste mês ainda não está na planilha do Plano de Vendas; o planejado do período segue a curva da meta last click diária (planilha Monitoramento de Canais).' : 'Planejado: Plano de Vendas do mês (aba Acompanhamento Categorias) × participação acumulada da diarização (aba 6. Diarização).';
+});
+document.querySelectorAll('.wr .fx-m').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('.wr .fx-m').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+  dash.draw('ch_faixa');
+}));
+
+dash.draw('ch_diario', (el) => {
+  const d = dash.data('diario');
+  el.replaceChildren();
+  if (d.status !== 'ok' || !d.data.length) return;
+  const rows = d.data;
+  const { svg, tip, w, h } = WR.chartBox(el);
+  const max = d3.max(rows, (r) => Math.max(r.receita || 0, r.meta || 0, r.receita_ly || 0)) || 1;
+  const y = d3.scaleLinear([0, max * 1.05], [h - 24, 10]).nice();
+  const ml = WR.leftMargin(svg, y.ticks(4).map(WR.F.brl));
+  const x = d3.scaleBand(rows.map((r) => r.data), [ml, w - 8]).padding(0.25);
+  const ga = svg.append('g').attr('transform', `translate(${ml},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(WR.F.brl).tickSize(-(w - 8 - ml)));
+  WR.styleAxis(ga); ga.select('.domain').remove();
+  const every = Math.ceil(rows.length / Math.max(4, Math.floor((w - ml) / 34)));
+  const gx = svg.append('g').attr('transform', `translate(0,${h - 24})`).call(d3.axisBottom(x).tickValues(rows.map((r) => r.data).filter((_, i) => i % every === 0)).tickFormat((s) => String(+s.slice(8, 10))));
+  WR.styleAxis(gx);
+  const bw = Math.min(32, x.bandwidth());
+  const off = (x.bandwidth() - bw) / 2;
+  svg.append('g').selectAll('rect').data(rows.filter((r) => r.receita != null)).join('rect')
+    .attr('x', (r) => x(r.data) + off).attr('width', bw).attr('y', (r) => y(r.receita)).attr('height', (r) => y(0) - y(r.receita)).attr('rx', 2).attr('fill', '#f9182d');
+  svg.append('g').selectAll('line').data(rows.filter((r) => r.meta)).join('line')
+    .attr('x1', (r) => x(r.data) + off - 2).attr('x2', (r) => x(r.data) + off + bw + 2).attr('y1', (r) => y(r.meta)).attr('y2', (r) => y(r.meta)).attr('stroke', '#270d0f').attr('stroke-width', 2);
+  svg.append('path').datum(rows).attr('d', d3.line().defined((r) => r.receita_ly != null).x((r) => x(r.data) + x.bandwidth() / 2).y((r) => y(r.receita_ly))).attr('fill', 'none').attr('stroke', '#f4a384').attr('stroke-width', 2).attr('stroke-linejoin', 'round');
+  svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.data)).attr('width', x.bandwidth()).attr('y', 0).attr('height', h - 24).attr('fill', 'transparent')
+    .on('mousemove', (ev, r) => {
+      const [mx, my] = d3.pointer(ev, svg.node());
+      tip.style('display', null).html('');
+      tip.append('div').attr('class', 'd').text(r.data.slice(8, 10) + '/' + r.data.slice(5, 7));
+      tip.append('div').text('Real: ' + WR.F.brl(r.receita));
+      tip.append('div').text('Meta: ' + WR.F.brl(r.meta));
+      tip.append('div').text('Ano passado: ' + WR.F.brl(r.receita_ly));
+      WR.placeTip(el, tip, mx * (el.clientWidth / w), my * (el.clientWidth / w));
+    })
+    .on('mouseleave', () => tip.style('display', 'none'));
+});
+
+function metaChart(el, field, fmt, kind) {
+  const d = dash.data('meta_diario');
+  el.replaceChildren();
+  if (d.status !== 'ok' || !d.data.length) return;
+  const rows = d.data;
+  const { svg, tip, w, h } = WR.chartBox(el);
+  const y = d3.scaleLinear([0, (d3.max(rows, (r) => r[field]) || 1) * 1.1], [h - 24, 10]).nice();
+  const ml = WR.leftMargin(svg, y.ticks(4).map(fmt));
+  const x = d3.scaleBand(rows.map((r) => r.data), [ml, w - 8]).padding(0.25);
+  const ga = svg.append('g').attr('transform', `translate(${ml},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(fmt).tickSize(-(w - 8 - ml)));
+  WR.styleAxis(ga); ga.select('.domain').remove();
+  const every = Math.ceil(rows.length / Math.max(4, Math.floor((w - ml) / 34)));
+  const gx = svg.append('g').attr('transform', `translate(0,${h - 24})`).call(d3.axisBottom(x).tickValues(rows.map((r) => r.data).filter((_, i) => i % every === 0)).tickFormat((s) => String(+s.slice(8, 10))));
+  WR.styleAxis(gx);
+  const cx = (r) => x(r.data) + x.bandwidth() / 2;
+  if (kind === 'bar') {
+    const bw = Math.min(32, x.bandwidth());
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => cx(r) - bw / 2).attr('width', bw).attr('y', (r) => y(r[field])).attr('height', (r) => y(0) - y(r[field])).attr('rx', 2).attr('fill', '#f9182d');
+  } else {
+    svg.append('path').datum(rows).attr('d', d3.line().x(cx).y((r) => y(r[field]))).attr('fill', 'none').attr('stroke', '#751614').attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
+    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', cx).attr('cy', (r) => y(r[field])).attr('r', 2.5).attr('fill', '#751614');
+  }
+  svg.append('g').selectAll('rect.hit').data(rows).join('rect').attr('class', 'hit').attr('x', (r) => x(r.data)).attr('width', x.bandwidth()).attr('y', 0).attr('height', h - 24).attr('fill', 'transparent')
+    .on('mousemove', (ev, r) => {
+      const [mx, my] = d3.pointer(ev, svg.node());
+      tip.style('display', null).html('');
+      tip.append('div').attr('class', 'd').text(r.data.slice(8, 10) + '/' + r.data.slice(5, 7));
+      tip.append('div').text(fmt(r[field]));
+      WR.placeTip(el, tip, mx * (el.clientWidth / w), my * (el.clientWidth / w));
+    })
+    .on('mouseleave', () => tip.style('display', 'none'));
+}
+dash.draw('ch_cpm', (el) => metaChart(el, 'cpm', (v) => WR.F.brl2(v), 'line'));
+</script>
+
+<script src="data.js"></script>
+
+</div>
+</body>
+</html>
