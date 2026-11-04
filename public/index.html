@@ -29,7 +29,10 @@
 #dash-root .wr h3 { font-family: var(--f-ret); font-weight: 700; font-size: 16px; letter-spacing: .04em; text-transform: uppercase; color: var(--ev-wine); margin: 0; }
 #dash-root .wr p { margin: 0; }
 .wr .cap { font-size: 13px; color: #7a4a46; }
-.wr .hero { background: var(--ev-red); color: #fff; border-radius: 22px; padding: clamp(18px, 3vw, 28px); display: grid; gap: 14px; }
+.wr .hero { background: var(--ev-red); color: #fff; border-radius: 22px; padding: clamp(18px, 3vw, 28px); display: grid; gap: 14px; position: relative; }
+.wr .hero .sair { position: absolute; top: clamp(14px, 2.4vw, 22px); right: clamp(14px, 2.4vw, 22px); color: #fff; font-family: var(--f-ret); font-weight: 700; font-size: 14px; letter-spacing: .04em; text-decoration: none; border: 1.5px solid rgba(255,255,255,.7); border-radius: 999px; padding: 5px 14px; }
+.wr .hero .sair:hover { background: rgba(255,255,255,.15); }
+.wr .hero .eyebrow { padding-right: 76px; }
 .wr .hero .eyebrow { font-family: var(--f-ret); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 14px; color: var(--ev-cream); }
 .wr .hero .lead { font-size: 16px; color: #fff; max-width: 60rem; }
 .wr .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; position: sticky; top: 0; z-index: 4; background: var(--ev-cream); padding: 10px 0; border-bottom: 2px solid var(--ev-line); }
@@ -208,6 +211,7 @@ td .tp.vid { background: var(--ev-orange); }
 
 <div class="wr">
   <header class="hero" id="topo">
+    <a class="sair" href="/auth/logout">Sair</a>
     <span class="eyebrow">( Comercial · Growth · CRM )</span>
     <h1>Evino e-commerce</h1>
     <p class="lead"><span data-draw="resumo">—</span></p>

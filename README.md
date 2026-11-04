@@ -47,8 +47,16 @@ São as tabelas de origem das views do Dados Víssimo (registro do ETL). As colu
 
 1. Importe este repositório num projeto da Vercel (framework: **Other**, sem build command; a pasta `public` é servida como estática).
 2. Em **Settings → Environment Variables**, cadastre as variáveis de `.env.example`. Nunca faça commit dos valores.
-3. Em **Settings → Deployment Protection**, ligue a proteção (Vercel Authentication ou senha): o dash mostra receita e margem.
+3. Configure o login (abaixo). Sem as variáveis de login o dash fica fechado.
 4. Rede: o Redshift costuma aceitar só IPs liberados. As funções da Vercel saem por IPs variáveis; se a conexão der timeout, peça ao time de dados para liberar o acesso ou use o Secure Compute da Vercel (IP fixo).
+
+### Login
+
+Só entra quem fizer login com uma conta Google Workspace dos domínios liberados (padrão: `vissimo.com.br`, `evino.com.br` e `grandcru.com.br`; troque em `AUTH_ALLOWED_DOMAINS`). Contas pessoais do Google criadas com esses e-mails não entram. Quem controla o acesso é o `middleware.js`, que roda antes de qualquer página ou `/api`, e a `api/data.js` confere a sessão de novo. A sessão dura 7 dias, e o botão **Sair** fica no topo do dash.
+
+1. No Google Cloud (o mesmo projeto da conta de serviço serve), abra **APIs e serviços → Tela de consentimento OAuth** e escolha o tipo **Externo**, já que as empresas podem ser organizações diferentes no Google. Use só os escopos `openid`, `email` e `profile` e clique em **Publicar app**: em modo de teste só entram os usuários de teste.
+2. Em **Credenciais → Criar credenciais → ID do cliente OAuth → Aplicativo da Web**, cadastre o URI de redirecionamento `https://<domínio do dash>/auth/callback`, um para cada domínio que for usar.
+3. Na Vercel, cadastre `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` e `AUTH_SECRET` (texto aleatório de 32+ caracteres) e faça um redeploy.
 
 ### Credenciais recomendadas
 
