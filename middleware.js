@@ -109,7 +109,7 @@ export default async function middleware(req) {
       ? Response.json({ error: 'Login não configurado' }, { status: 503 })
       : loginPage('config', 503);
   }
-  const callback = url.origin + '/'; /* URI de redirecionamento cadastrado no Google: https://<domínio>/ */
+  const callback = url.origin; /* URI de redirecionamento cadastrado no Google: https://<domínio>, sem barra no final */
 
   if (path === '/auth/login') {
     const state = b64url(crypto.getRandomValues(new Uint8Array(24)));
