@@ -17,7 +17,7 @@
 #dash-root .wr {
   --ev-red: #f9182d; --ev-orange: #f17041; --ev-cream: #fff6f3; --ev-wine: #751614; --ev-salmon: #f4a384; --ev-bord: #590f12; --ev-dark: #270d0f; --ev-line: #f3d9cf;
   --ev-good: #2f6f57; --ev-bad: #d1182b; --ev-warn: #a35f00;
-  --f-title: 'EvPaytone', var(--font-anthropic-sans); --f-ret: 'EvBarlowC', var(--font-anthropic-sans); --f-body: 'EvBarlowSC', var(--font-anthropic-sans);
+  --f-title: 'EvPaytone', var(--font-anthropic-sans, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif); --f-ret: 'EvBarlowC', var(--font-anthropic-sans, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif); --f-body: 'EvBarlowSC', var(--font-anthropic-sans, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif);
   display: grid; gap: 28px; padding: clamp(20px, 3vw, 36px) clamp(20px, 5.5vw, 72px); background: var(--ev-cream); color: var(--ev-dark);
   font-family: var(--f-body); font-size: 15px; line-height: 1.4; font-variant-numeric: tabular-nums;
 }
@@ -202,7 +202,7 @@ td .tp.vid { background: var(--ev-orange); }
 .wr .badge.warn { background: #e0a100; color: #fff; }
 .wr .badge.down { background: var(--ev-red); color: #fff; }
 .wr .badge.neutral { background: #b9a19b; }
-[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow, 400ms); }
 [data-dash-source-state=empty] { color: transparent; }
 </style>
 
