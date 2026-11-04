@@ -5,7 +5,7 @@
    /auth/callback  → confere o e-mail e grava a sessão (cookie assinado, 7 dias)
    /auth/logout    → apaga a sessão
 
-   Variáveis: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, AUTH_SECRET
+   Variáveis: GOOGLE_OAUTH_CLIENT_ID e GOOGLE_OAUTH_CLIENT_SECRET (ou AUTH_GOOGLE_ID e AUTH_GOOGLE_SECRET), AUTH_SECRET
    e, opcional, AUTH_ALLOWED_DOMAINS (padrão: vissimo.com.br,evino.com.br,grandcru.com.br). */
 
 const COOKIE = 'wr_session';
@@ -101,8 +101,8 @@ export default async function middleware(req) {
   const path = url.pathname;
   if (PUBLIC.has(path)) return;
 
-  const id = process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const secret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  const id = process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.AUTH_GOOGLE_ID;
+  const secret = process.env.GOOGLE_OAUTH_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET;
   /* sem configuração o dash fica fechado (nunca aberto por engano) */
   if (!id || !secret || !process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32) {
     return path.startsWith('/api/')
