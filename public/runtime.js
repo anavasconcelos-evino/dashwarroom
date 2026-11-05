@@ -8,9 +8,9 @@
   const SOURCES = {
     vendas: ['ini', 'fim', 'pago_in'],
     vendas_yoy: ['ini_yoy', 'fim_yoy'],
-    pedidos_canal: ['ini', 'fim'],
+    pedidos_canal: ['ini', 'fim', 'pago_in'],
     pedidos_canal_yoy: ['ini_yoy', 'fim_yoy'],
-    google_lc: ['ini', 'fim'],
+    google_lc: ['ini', 'fim', 'pago_in'],
     kits: ['ini', 'fim', 'pago_in'],
     fact_dia: ['ini', 'fim', 'pago_in'],
     lc_dia: ['ini', 'fim'],
